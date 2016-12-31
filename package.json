@@ -1,0 +1,33 @@
+{
+  "name": "project_mayday",
+  "version": "1.0.0",
+  "description": "A flight simulator",
+  "main": "mayday.js",
+  "dependencies": {
+    "babel-cli": "^6.18.0",
+    "babel-preset-env": "^1.1.4"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.18.0",
+    "babel-core": "^6.21.0",
+    "babel-loader": "^6.2.10",
+    "babel-preset-env": "^1.1.4",
+    "babel-preset-es2015": "^6.18.0",
+    "webpack": "^1.14.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "babel src -d lib --source-maps",
+    "pac": "webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MattFerraro/project_mayday.git"
+  },
+  "author": "Matt Ferraro",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/MattFerraro/project_mayday/issues"
+  },
+  "homepage": "https://github.com/MattFerraro/project_mayday#readme"
+}
