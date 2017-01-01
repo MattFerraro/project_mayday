@@ -1,21 +1,42 @@
 import * as teamRed from "./teamOne";
+import * as teamBlue from "./teamTwo";
 
 
 function initialize() {
-	var globalState = globalInit();
+	let globalState = globalInit();
 
-	var globalStateCopy = {};
-	console.log("Got a global state copy:", globalStateCopy);
-	// $.extend(true, globalStateCopy, globalState);
+	let redState = teamRed.initState(globalState);
+	let blueState = teamBlue.initState(globalState);
 
-	teamRed.initState();
-	// var teamRedState = Init(globalStateCopy);
+	return globalState, redState, blueState;
+}
+
+function run(globalState, redState, blueState, dt=0.1) {
+	for (let i = 0; i < 10; i++) {
+		console.log("Timestep", i);
+		let redCommands = teamRed.getCommands();
+		let blueCommands = teamBlue.getCommands();
+
+		applyCommands(globalState, redCommands);
+		applyCommands(globalState, blueCommands);
+
+		globalState = updateState(globalState, dt);
+	}
+}
+
+function applyCommands(globalState, commands) {
+
+}
+
+function updateState(globalState, dt) {
+	let newState = globalState;
+	return newState;
 }
 
 function globalInit() {
-	return {
+	 return {
 		"data": "stuff"
 	};
 }
 
-initialize();
+run(initialize());
