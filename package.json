@@ -13,12 +13,14 @@
     "babel-loader": "^6.2.10",
     "babel-preset-env": "^1.1.4",
     "babel-preset-es2015": "^6.18.0",
+    "eslint": "^3.12.2",
+    "eslint-config-google": "^0.7.1",
     "webpack": "^1.14.0"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "babel src -d lib --source-maps",
-    "pac": "webpack"
+    "build": "webpack",
+    "run": "node build/bundle.js"
   },
   "repository": {
     "type": "git",
