@@ -31,7 +31,7 @@ exports.getCommands = function(globalState, dt) {
 		}
 
 		// Do we have some altitude? If so cut engine
-		if (plane.z > 2) {
+		if (plane.z > 3) {
 			winston.info("team: cutting throttle");
 			commands.push({
 				id: plane.id,
