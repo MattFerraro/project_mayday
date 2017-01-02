@@ -1,6 +1,10 @@
 "use strict"
+var utils = require("./utils.js");
+var winston = require('winston');
+
 var state = {};
 var color = "none";
+var applied = false;
 
 exports.initState = function(globalState, givenColor) {
 	console.log("Team two initializing state!");
@@ -8,13 +12,33 @@ exports.initState = function(globalState, givenColor) {
 }
 
 exports.getCommands = function(globalState, dt) {
-	// are we not yet at full thrust?
-	let f1Commands = {};
-	let commands = [f1Commands];
+	let commands = [];
 
-	if (globalState[color][0].thrust != 1) {
-		console.log("Applying full thrust");
-		f1Commands.thrust = 1;
+	// for each plane, create some commands
+	for (var i = globalState[color].length - 1; i >= 0; i--) {
+		let plane = globalState[color][i];
+
+		// are we not yet at full thrust?
+
+		if (plane.thrust != 1 && applied === false) {
+			winston.info("team: Applying full thrust");
+			commands.push({
+				id: plane.id,
+				input: "thrust",
+				value: 1
+			});
+			applied = true;
+		}
+
+		// Do we have some altitude? If so cut engine
+		if (plane.z > 2) {
+			winston.info("team: cutting throttle");
+			commands.push({
+				id: plane.id,
+				input: "thrust",
+				value: 0
+			});
+		}
 	}
 
 	return commands;
