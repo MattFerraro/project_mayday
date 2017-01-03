@@ -1,11 +1,11 @@
 exports.planeSpecs = {
 	"fighter": {
 		mass: 1000,
-		maxThrust: 800,
+		maxThrust: 500,
 		Iroll: 100,
 		maxRoll: 100,
 		Ipitch: 100,
-		maxPitch: 100,
+		maxPitch: 10,
 		Iyaw: 100,
 		maxYaw: 100,
 		cd: function(aoa) {

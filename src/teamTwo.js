@@ -30,12 +30,22 @@ exports.getCommands = function(globalState, dt) {
 			applied = true;
 		}
 
-		// Do we have some altitude? If so cut engine
+		// Do we have some altitude? If so pull up
 		if (plane.z > 3) {
-			winston.info("team: cutting throttle");
+			winston.info("team: pulling up");
 			commands.push({
 				id: plane.id,
-				input: "thrust",
+				input: "elevator",
+				value: 0.00
+			});
+		}
+
+		// Do we have lots of altitude? If so stop!
+		if (plane.z > 4) {
+			winston.info("team: pulling up");
+			commands.push({
+				id: plane.id,
+				input: "elevator",
 				value: 0
 			});
 		}

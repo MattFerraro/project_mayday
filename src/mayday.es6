@@ -1,4 +1,5 @@
-import * as utils from "./utils";
+// import * as utils from "./utils";
+var utils = require('./utils.js');
 import * as teamRed from "./teamOne";
 import * as teamBlue from "./teamTwo";
 var planeSpecs = require('./specs.js');
@@ -9,7 +10,6 @@ winston.level = "info";
 
 var G = -9.8;   // m/s^2
 var rho = 1.2;  // kg/m^3
-
 
 var LOGLEVEL = 5;
 var TIMESTEPS = 20 * 36;
@@ -54,11 +54,12 @@ function applyCommands(globalState, commands, color) {
 function updateState(globalState, dt) {
 	let newState = _.clone(globalState);
 	let teams = [newState.red, newState.blue];
+
 	for (let team of teams) {
 		for (let plane of team) {
 			let specs = planeSpecs.planeSpecs[plane.type];
 
-			// USEFUL VECTORS AND VALUES ************
+			// USEFUL VECTORS AND VALUES ****************
 			let heading = [plane.headingX, plane.headingY, plane.headingZ];
 			let up = [plane.upX, plane.upY, plane.upZ];
 
@@ -87,7 +88,7 @@ function updateState(globalState, dt) {
 			// Project velocity onto heading
 			let velocityOnHeading = utils.scale(velocity, utils.dot(velocity, heading));
 
-			// FORCES ******************************
+			// FORCES **********************************
 			// gravity pulls you down
 			let Fgrav = [0, 0, G * specs.mass];
 			let FgravMag = utils.mag(Fgrav);
@@ -132,7 +133,7 @@ function updateState(globalState, dt) {
 				winston.debug("F net:", Fnet);
 			}
 
-			// KINEMATICS ******************************
+			// LINEAR KINEMATICS ******************************
 			let accel = utils.scale(Fnet, 1/specs.mass);
 
 			plane.dx += accel[0] * dt;
@@ -142,6 +143,30 @@ function updateState(globalState, dt) {
 			plane.x += 0.5 * accel[0] * dt * dt + plane.dx * dt;
 			plane.y += 0.5 * accel[0] * dt * dt + plane.dy * dt;
 			plane.z += 0.5 * accel[0] * dt * dt + plane.dz * dt;
+
+			// ROTATIONAL KINEMATICS **************************
+
+			// let kRollFriction = 1;
+			// let Troll = specs.maxRoll * plane.aileron - plane.omegaRoll * kRollFriction;
+			// let dOmegaRoll =
+			let kPitchFriction = 100;
+			let Tpitch = specs.maxPitch * plane.elevator - plane.omegaPitch * kPitchFriction;
+			let pitchAccel = Tpitch / specs.Ipitch;
+			let pitchAxis = utils.cross(heading, up);
+			plane.omegaPitch += pitchAccel * dt;
+			let pitchMovement = 0.5 * pitchAccel * dt * dt + plane.omegaPitch * dt;
+			let newUp = utils.normalize(utils.rotate(up, pitchAxis, pitchMovement));
+			let newHeading = utils.normalize(utils.rotate(heading, pitchAxis, pitchMovement));
+			winston.info("pitch:" + heading);
+
+			plane.upX = newUp[0];
+			plane.upY = newUp[1];
+			plane.upZ = newUp[2];
+
+			plane.headingX = newHeading[0];
+			plane.headingY = newHeading[1];
+			plane.headingZ = newHeading[2];
+
 
 			/*
 				0: index
@@ -166,7 +191,12 @@ function updateState(globalState, dt) {
 				19: fthrust.x
 				20: fthrust.y
 				21: fthrust.z
-			 */
+				22: angle or something
+				23: airspeed
+				24: omegaPitch
+			*/
+
+			// LOGGING ****************************************
 
 			// location, velocity, force_lift
 			winston.info("plane:\t" +
@@ -176,7 +206,10 @@ function updateState(globalState, dt) {
 				Flift[0] + "\t" + Flift[1] + "\t" + Flift[2] + "\t" +
 				aoa + "\t" + cl + "\t" + cd + "\t" +
 				Fdrag[0] + "\t" + Fdrag[1] + "\t" + Fdrag[2] + "\t" +
-				Fthrust[0] + "\t" + Fthrust[1] + "\t" + Fthrust[2] + "\t"
+				Fthrust[0] + "\t" + Fthrust[1] + "\t" + Fthrust[2] + "\t" +
+				10 * Math.atan2(plane.headingZ, plane.headingY) * 180 / Math.PI + "\t" +
+				utils.mag(velocity) + "\t" +
+				plane.omegaPitch
 			);
 		}
 	}
@@ -245,6 +278,9 @@ function globalInit() {
 			dx: 0,
 			dy: 0,
 			dz: 0,
+			omegaRoll: 0,
+			omegaPitch: 0,
+			omegaYaw: 0,
 			thrust: 0,
 			elevator: 0,
 			rudder: 0,
