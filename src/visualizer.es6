@@ -6,42 +6,69 @@ var geometry, material, mesh;
 init();
 animate();
 
+function buildScene() {
+    let yellowMaterial = new THREE.MeshPhongMaterial({ color: 0xFFFF00 });
+    let blueMaterial = new THREE.MeshPhongMaterial({ color: 0x0000CC });
+    let cementMaterial = new THREE.MeshPhongMaterial({ color: 0x4C4C4C });
+
+    // Cement:
+    let rwLength = 2000;
+    var runway = new THREE.Mesh(
+        new THREE.PlaneGeometry(30, rwLength),
+        cementMaterial
+    );
+    scene.add(runway);
+    // Center lines:
+    let stripeInterval = 10;
+    for (var i = 0; i < rwLength / stripeInterval; i ++) {
+        var stripe = new THREE.Mesh(
+            new THREE.PlaneGeometry(0.3, 5),
+            yellowMaterial
+        );
+        stripe.position.setZ(0.01);
+        stripe.position.setY(i * stripeInterval - rwLength / 2);
+        scene.add(stripe);
+    }
+}
+
+function addLighting() {
+    var ambientLight = new THREE.AmbientLight(0x202020);
+    scene.add(ambientLight);
+
+    var directionalLight = new THREE.DirectionalLight(0xffffff,1);
+    directionalLight.position.set(0, 1000, 1000);
+    scene.add(directionalLight);
+}
+
+function buildRenderer() {
+    renderer = new THREE.WebGLRenderer({ antialias: true});
+    renderer.setSize( window.innerWidth, window.innerHeight );
+}
+
+function buildCamera() {
+    camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 10000 );
+    camera.position.set(0, 0, 20);
+
+    let a = new THREE.Vector3(0, 1, 0);
+    a.add(camera.position);
+
+    camera.lookAt(a);
+}
 function init() {
 
     scene = new THREE.Scene();
 
-    camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 10000 );
-    camera.position.z = 1000;
+    buildCamera();
 
-    geometry = new THREE.BoxGeometry( 200, 200, 200 );
-    // material = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe: true } );
-    material = new THREE.MeshLambertMaterial({
-    	color: 0xCCCCCC
-    });
-
-    mesh = new THREE.Mesh( geometry, material );
-    scene.add( mesh );
-
-    renderer = new THREE.WebGLRenderer();
-    renderer.setSize( window.innerWidth, window.innerHeight );
-
-    var ambientLight = new THREE.AmbientLight(0x202020);
-	scene.add(ambientLight);
-
-	var directionalLight = new THREE.DirectionalLight(0xffffff,1);
-	directionalLight.position.set(0, 0, 1000);
-	scene.add(directionalLight);
+    buildScene();
+    buildRenderer();
+    addLighting();
 
     document.body.appendChild( renderer.domElement );
 }
 
 function animate() {
-
+    camera.position.y += 1.5;
     requestAnimationFrame( animate );
-
-    mesh.rotation.x += 0.01;
-    mesh.rotation.y += 0.02;
-
     renderer.render( scene, camera );
-
 }
