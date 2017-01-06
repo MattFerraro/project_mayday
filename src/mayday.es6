@@ -12,7 +12,7 @@ var G = -9.8;   // m/s^2
 var rho = 1.2;  // kg/m^3
 
 var LOGLEVEL = 5;
-var TIMESTEPS = 20 * 36;
+var TIMESTEPS = 20 * 60;
 
 function initialize() {
 	let globalState = globalInit();
@@ -176,12 +176,12 @@ function updateState(globalState, dt) {
 				4: dx
 				5: dy
 				6: dz
-				7: accel.x
-				8: accel.y
-				9: accel.z
-				10: flift.x
-				11: flift.y
-				12: flift.z
+				7: heading.x
+				8: heading.y
+				9: heading.z
+				10: up.x
+				11: up.y
+				12: up.z
 				13: aoa
 				14: cl
 				15: cd
@@ -202,8 +202,8 @@ function updateState(globalState, dt) {
 			winston.info("plane:\t" +
 				plane.x + "\t" + plane.y + "\t" + plane.z + "\t" +
 				plane.dx + "\t" + plane.dy + "\t" + plane.dz + "\t" +
-				accel[0] + "\t" + accel[1] + "\t" + accel[2] + "\t" +
-				Flift[0] + "\t" + Flift[1] + "\t" + Flift[2] + "\t" +
+				plane.headingX + "\t" + plane.headingY + "\t" + plane.headingZ + "\t" +
+				plane.upX + "\t" + plane.upY + "\t" + plane.upZ + "\t" +
 				aoa + "\t" + cl + "\t" + cd + "\t" +
 				Fdrag[0] + "\t" + Fdrag[1] + "\t" + Fdrag[2] + "\t" +
 				Fthrust[0] + "\t" + Fthrust[1] + "\t" + Fthrust[2] + "\t" +

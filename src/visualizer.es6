@@ -70,10 +70,17 @@ function init() {
 
 function animate() {
     let frame = frames[frameIndex];
+    // Set camera position
     camera.position.setX(frame[0]);
     camera.position.setY(frame[1]);
     camera.position.setZ(frame[2]);
-    console.log(camera.position);
+
+    // Set camera up vector
+    camera.up = new THREE.Vector3(frame[9], frame[10], frame[11]);
+
+    let a = new THREE.Vector3(frame[6], frame[7], frame[8]);
+    a.add(camera.position);
+    camera.lookAt(a);
 
     // camera.position.y += 1.5;
     requestAnimationFrame( animate );

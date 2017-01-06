@@ -30,25 +30,25 @@ exports.getCommands = function(globalState, dt) {
 			applied = true;
 		}
 
-		// Do we have some altitude? If so pull up
-		if (plane.z > 3) {
+		// Do we have some altitude? If so push down
+		if (plane.z > 3 && plane.elevator === 0) {
 			winston.info("team: pulling up");
 			commands.push({
 				id: plane.id,
 				input: "elevator",
-				value: 0.00
+				value: -0.8
 			});
 		}
 
 		// Do we have lots of altitude? If so stop!
-		if (plane.z > 4) {
-			winston.info("team: pulling up");
-			commands.push({
-				id: plane.id,
-				input: "elevator",
-				value: 0
-			});
-		}
+		// if (plane.z > 4 && plane.elevator !== 0) {
+		// 	winston.info("team: stopping!");
+		// 	commands.push({
+		// 		id: plane.id,
+		// 		input: "elevator",
+		// 		value: 0
+		// 	});
+		// }
 	}
 
 	return commands;
