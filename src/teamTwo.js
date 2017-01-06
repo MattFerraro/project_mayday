@@ -1,6 +1,5 @@
 "use strict"
 var utils = require("./utils.js");
-var winston = require('winston');
 
 var state = {};
 var color = "none";
@@ -21,7 +20,7 @@ exports.getCommands = function(globalState, dt) {
 		// are we not yet at full thrust?
 
 		if (plane.thrust != 1 && applied === false) {
-			winston.info("team: Applying full thrust");
+			console.log("team: Applying full thrust");
 			commands.push({
 				id: plane.id,
 				input: "thrust",
@@ -32,7 +31,7 @@ exports.getCommands = function(globalState, dt) {
 
 		// Do we have some altitude? If so push down
 		if (plane.z > 3 && plane.elevator === 0) {
-			winston.info("team: pulling up");
+			console.log("team: pulling up");
 			commands.push({
 				id: plane.id,
 				input: "elevator",
@@ -42,7 +41,7 @@ exports.getCommands = function(globalState, dt) {
 
 		// Do we have lots of altitude? If so stop!
 		// if (plane.z > 4 && plane.elevator !== 0) {
-		// 	winston.info("team: stopping!");
+		// 	console.log("team: stopping!");
 		// 	commands.push({
 		// 		id: plane.id,
 		// 		input: "elevator",

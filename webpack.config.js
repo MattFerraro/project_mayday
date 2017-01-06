@@ -46,5 +46,28 @@ module.exports = [{
         resolve: {
             extensions: ['', '.js', '.es6']
         }
+    },
+    {
+        entry: ["./src/interactive.es6"],
+        output: {
+            path: "build",
+            filename: "interactive.js"
+        },
+        devtool: '#inline-source-map',
+        module: {
+            loaders: [
+                {
+                    test:   /\.es6/,
+                    loader: 'babel-loader',
+                    exclude: /node_modules/,
+                    query: {
+                        presets: ['es2015']
+                    }
+                }
+            ]
+        },
+        resolve: {
+            extensions: ['', '.js', '.es6']
+        }
     }
 ];
