@@ -1,8 +1,5 @@
 var THREE = require("three");
 
-// var scene, camera, renderer;
-// var geometry, material, mesh;
-
 function addLighting(scene) {
     var ambientLight = new THREE.AmbientLight(0x202020);
     scene.add(ambientLight);
@@ -53,6 +50,23 @@ function buildScene() {
         stripe.position.setZ(0.01);
         stripe.position.setY(i * stripeInterval - rwLength / 2 - 8000);
         scene.add(stripe);
+    }
+
+    // Add flat plane!
+    let flatPlane = new THREE.PlaneGeometry(30, 30);
+    for (var i = 0; i < 50; i++) {
+        for (var j = 0; j < 50; j++) {
+            if (j % 2 == 0 ^ i % 2 == 0) {
+                var tile = new THREE.Mesh(flatPlane, yellowMaterial);
+            }
+            else {
+                var tile = new THREE.Mesh(flatPlane, blueMaterial);
+            }
+            tile.position.setZ(-0.01);
+            tile.position.setX((i-25) * 40);
+            tile.position.setY((j-25) * 40 - 8000);
+            scene.add(tile);
+        }
     }
     return scene;
 }

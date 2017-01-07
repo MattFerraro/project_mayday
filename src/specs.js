@@ -1,7 +1,7 @@
 exports.planeSpecs = {
 	"fighter": {
-		mass: 1000,
-		maxThrust: 900,
+		mass: 500,
+		maxThrust: 500,
 
 		Iroll: 100,
 		wingLength: 10,
@@ -12,7 +12,7 @@ exports.planeSpecs = {
 		tailArea: 3,
 
 		Iyaw: 100,
-		maxYaw: 100,
+		rudderArea: 1.5,
 
 		cd: function(aoa) {
 			// aoa is in degrees

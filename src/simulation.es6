@@ -80,8 +80,11 @@ function updateState(globalState, dt) {
 
 			// find angle of attack, cl and cd
 			let diff = utils.difference(heading, velocityNorm);
-			let dotted = utils.dot(diff, up)
-			let aoa = Math.asin(dotted) * 180 / Math.PI;
+			let aoa = Math.asin(utils.dot(diff, up)) * 180 / Math.PI;
+			// console.log(aoa);
+			console.log(plane.omegaRoll);
+			let rudderUp = utils.cross(up, heading);
+			let rudderAoa = Math.asin(utils.dot(diff, rudderUp)) * 180 / Math.PI;
 			// let firstCross = utils.cross(heading, velocityNorm);
 			// let secondCross = utils.cross(firstCross, up);
 			// let c = utils.dot(heading, secondCross);
@@ -116,8 +119,8 @@ function updateState(globalState, dt) {
 			// console.log("F thrust:", Fthrust);
 
 			// drag pulls you back
-			let FdragMag = 0.5 * rho * cd * specs.frontalArea * speedSquared;
-			let Fdrag = utils.scale(heading, -FdragMag);
+			let FdragMag = 0.5 * rho * cd * specs.frontalArea * speedSquared + 2;
+			let Fdrag = utils.scale(velocityNorm, -FdragMag);
 			// console.log("F drag:", Fdrag);
 
 			// let Fnet = utils.plus(utils.plus(utils.plus(Fgrav, Flift), Fdrag), Fthrust);
@@ -141,6 +144,8 @@ function updateState(globalState, dt) {
 			// LINEAR KINEMATICS ******************************
 			let accel = utils.scale(Fnet, 1/specs.mass);
 
+
+
 			plane.dx += accel[0] * dt;
 			plane.dy += accel[1] * dt;
 			plane.dz += accel[2] * dt;
@@ -150,11 +155,35 @@ function updateState(globalState, dt) {
 			plane.z += 0.5 * accel[0] * dt * dt + plane.dz * dt;
 
 			// TORQUES ****************************************
-			let kPitchFriction = 100;
+			let kPitchFriction = 200;
 			let Tpitch = (0.5 * rho * plane.elevator * speedSquared * specs.tailArea * specs.tailLength) - plane.omegaPitch * kPitchFriction;
+			// K, but the horizontal stab tho...
+			Tpitch -= 0.5 * rho * aoa * speedSquared * specs.tailArea * specs.tailLength / 200;
+			// Also the wing imparts down torque
+			Tpitch -= FliftMag * 0.05;
 
+			// console.log(aoa);
+
+			// console.log(utils.mag(velocity));
 			let kRollFriction = 200;
 			let Troll = (0.5 * rho * plane.aileron * speedSquared * specs.aileronArea * specs.wingLength) - plane.omegaRoll * kRollFriction;
+			// console.log(Troll);
+			if (isNaN(Troll) || Math.abs(Troll) > 399900) {
+				console.log("speed:", plane.dx, plane.dy, plane.dz);
+				console.log("projected speed:", velocityOnHeading);
+				console.log("speedSquared:", speedSquared);
+				console.log("aileronArea:", specs.aileronArea);
+				console.log("wingLength:", specs.wingLength);
+				console.log("omegaRoll:", plane.omegaRoll);
+				console.log("krollfric:", kRollFriction);
+				console.log("")
+				throw "error";
+			}
+
+			let kYawFriction = 2000;
+			let Tyaw = (0.5 * rho * plane.rudder * speedSquared * specs.rudderArea * specs.tailLength) - plane.omegaYaw * kYawFriction;
+			Tyaw -= 0.5 * rho * rudderAoa * speedSquared * specs.rudderArea * specs.tailLength / 20;
+			// console.log(rudderAoa);
 
 			// ROTATIONAL KINEMATICS **************************
 			let pitchAccel = Tpitch / specs.Ipitch;
@@ -163,19 +192,18 @@ function updateState(globalState, dt) {
 			let pitchMovement = 0.5 * pitchAccel * dt * dt + plane.omegaPitch * dt;
 			let newUp = utils.normalize(utils.rotate(up, pitchAxis, pitchMovement));
 			let newHeading = utils.normalize(utils.rotate(heading, pitchAxis, pitchMovement));
-			// plane.upX = newUp[0];
-			// plane.upY = newUp[1];
-			// plane.upZ = newUp[2];
-			// plane.headingX = newHeading[0];
-			// plane.headingY = newHeading[1];
-			// plane.headingZ = newHeading[2];
-
 
 			let rollAccel = Troll / specs.Iroll;
 			let rollAxis = newHeading;
 			plane.omegaRoll += rollAccel * dt;
 			let rollMovement = 0.5 * rollAccel * dt * dt + plane.omegaRoll * dt;
 			newUp = utils.normalize(utils.rotate(up, rollAxis, rollMovement));
+
+			let yawAccel = Tyaw / specs.Iyaw;
+			let yawAxis = newUp;
+			plane.omegaYaw += yawAccel * dt;
+			let yawMovement = 0.5 * yawAccel * dt * dt + plane.omegaYaw * dt;
+			newHeading = utils.normalize(utils.rotate(newHeading, yawAxis, yawMovement));
 
 			plane.upX = newUp[0];
 			plane.upY = newUp[1];
@@ -286,15 +314,15 @@ function globalInit() {
 			type: "fighter",
 			id: 0,
 			x: 0,
-			y: -8000,
-			z: 0.674932,
-			headingX: 0,
-			headingY: 1,
+			y: -9000,
+			z: 10,
+			headingX: 1,
+			headingY: 0,
 			headingZ: 0,
 			upX: 0,
 			upY: 0,
 			upZ: 1,
-			dx: 0,
+			dx: 20,
 			dy: 0,
 			dz: 0,
 			omegaRoll: 0,
