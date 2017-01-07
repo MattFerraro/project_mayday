@@ -1,13 +1,19 @@
 exports.planeSpecs = {
 	"fighter": {
-		mass: 2000,
-		maxThrust: 800,
+		mass: 1000,
+		maxThrust: 900,
+
 		Iroll: 100,
-		maxRoll: 100,
+		wingLength: 10,
+		aileronArea: 2,
+
 		Ipitch: 100,
-		maxPitch: 50,
+		tailLength: 10,
+		tailArea: 3,
+
 		Iyaw: 100,
 		maxYaw: 100,
+
 		cd: function(aoa) {
 			// aoa is in degrees
 			var x = (aoa) / 16;

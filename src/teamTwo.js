@@ -35,7 +35,7 @@ exports.getCommands = function(globalState, dt) {
 			commands.push({
 				id: plane.id,
 				input: "elevator",
-				value: -0.8
+				value: -0.01
 			});
 		}
 

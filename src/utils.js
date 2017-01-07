@@ -6,6 +6,11 @@ function mag(vec) {
 		vec[2] * vec[2]);
 	return mag;
 }
+
+function magSquared(vec) {
+	return vec[0] * vec[0] + vec[1] * vec[1] + vec[2] * vec[2];
+}
+
 function normalize(vec) {
 	var mag = Math.sqrt(
 		vec[0] * vec[0] +
@@ -24,8 +29,18 @@ function scale(vec, scale) {
 
 
 // Two vector operations
-function plus(u, v) {
-	return [u[0] + v[0], u[1] + v[1], u[2] + v[2]];
+function plus(...vecs) {
+	let retVal = [0, 0, 0];
+	for (var i = 0; i < vecs.length; i++) {
+		retVal[0] += vecs[i][0];
+		retVal[1] += vecs[i][1];
+		retVal[2] += vecs[i][2];
+	}
+	return retVal;
+}
+
+function difference(u, v) {
+	return [u[0] - v[0], u[1] - v[1], u[2] - v[2]];
 }
 
 function dot(u, v) {
@@ -51,11 +66,14 @@ function rotate(v, e, theta) {
 	return vrot;
 }
 
-
-exports.mag = mag;
-exports.normalize = normalize;
-exports.scale = scale;
-exports.plus = plus;
-exports.dot = dot;
-exports.cross = cross;
-exports.rotate = rotate;
+module.exports = {
+	mag: mag,
+	magSquared: magSquared,
+	normalize: normalize,
+	scale: scale,
+	plus: plus,
+	difference: difference,
+	dot: dot,
+	cross: cross,
+	rotate: rotate
+};

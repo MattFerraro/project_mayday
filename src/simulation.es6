@@ -79,17 +79,23 @@ function updateState(globalState, dt) {
 			}
 
 			// find angle of attack, cl and cd
-			let firstCross = utils.cross(heading, velocityNorm);
-			let secondCross = utils.cross(firstCross, up);
-			let c = utils.dot(heading, secondCross);
-			let aoa = Math.asin(c) * 180 / Math.PI; // in degrees
+			let diff = utils.difference(heading, velocityNorm);
+			let dotted = utils.dot(diff, up)
+			let aoa = Math.asin(dotted) * 180 / Math.PI;
+			// let firstCross = utils.cross(heading, velocityNorm);
+			// let secondCross = utils.cross(firstCross, up);
+			// let c = utils.dot(heading, secondCross);
+			// let aoa = Math.asin(c) * 180 / Math.PI; // in degrees
 			let cl = specs.cl(aoa);
 			let cd = specs.cd(aoa);
+			// console.log(cl, cd);
 
 			let velocity = [plane.dx, plane.dy, plane.dz];
 
 			// Project velocity onto heading
-			let velocityOnHeading = utils.scale(velocity, utils.dot(velocity, heading));
+			let velocityOnHeading = utils.scale(velocity, utils.dot(velocityNorm, heading));
+			// console.log(utils.mag(velocity), utils.mag(velocityOnHeading));
+
 
 			// FORCES **********************************
 			// gravity pulls you down
@@ -98,17 +104,11 @@ function updateState(globalState, dt) {
 			// console.log("F grav:", Fgrav);
 
 			// lift scales with v^2
-			let speedSquared =
-				velocityOnHeading[0] * velocityOnHeading[0] +
-				velocityOnHeading[1] * velocityOnHeading[1] +
-				velocityOnHeading[2] * velocityOnHeading[2];
-
-
-
+			let speedSquared = utils.magSquared(velocityOnHeading);
 			let FliftMag = 0.5 * rho * cl * specs.wingArea * speedSquared;
 			// lift pulls you up
 			let Flift = utils.scale(up, FliftMag);
-			// console.log("F lift:", Flift);
+			// console.log("F lift:", utils.mag(Flift));
 
 			// thrust pushes you forward
 			let FthrustMag = plane.thrust * specs.maxThrust;
@@ -120,7 +120,8 @@ function updateState(globalState, dt) {
 			let Fdrag = utils.scale(heading, -FdragMag);
 			// console.log("F drag:", Fdrag);
 
-			let Fnet = utils.plus(utils.plus(utils.plus(Fgrav, Flift), Fdrag), Fthrust);
+			// let Fnet = utils.plus(utils.plus(utils.plus(Fgrav, Flift), Fdrag), Fthrust);
+			let Fnet = utils.plus(Fgrav, Flift, Fdrag, Fthrust);
 
 			// console.log("F net:", Fnet);
 
@@ -136,6 +137,7 @@ function updateState(globalState, dt) {
 				// console.log("F net:", Fnet);
 			}
 
+
 			// LINEAR KINEMATICS ******************************
 			let accel = utils.scale(Fnet, 1/specs.mass);
 
@@ -147,29 +149,40 @@ function updateState(globalState, dt) {
 			plane.y += 0.5 * accel[0] * dt * dt + plane.dy * dt;
 			plane.z += 0.5 * accel[0] * dt * dt + plane.dz * dt;
 
-			// ROTATIONAL KINEMATICS **************************
-
-			// let kRollFriction = 1;
-			// let Troll = specs.maxRoll * plane.aileron - plane.omegaRoll * kRollFriction;
-			// let dOmegaRoll =
+			// TORQUES ****************************************
 			let kPitchFriction = 100;
-			let Tpitch = specs.maxPitch * plane.elevator - plane.omegaPitch * kPitchFriction;
+			let Tpitch = (0.5 * rho * plane.elevator * speedSquared * specs.tailArea * specs.tailLength) - plane.omegaPitch * kPitchFriction;
+
+			let kRollFriction = 200;
+			let Troll = (0.5 * rho * plane.aileron * speedSquared * specs.aileronArea * specs.wingLength) - plane.omegaRoll * kRollFriction;
+
+			// ROTATIONAL KINEMATICS **************************
 			let pitchAccel = Tpitch / specs.Ipitch;
 			let pitchAxis = utils.cross(heading, up);
 			plane.omegaPitch += pitchAccel * dt;
 			let pitchMovement = 0.5 * pitchAccel * dt * dt + plane.omegaPitch * dt;
 			let newUp = utils.normalize(utils.rotate(up, pitchAxis, pitchMovement));
 			let newHeading = utils.normalize(utils.rotate(heading, pitchAxis, pitchMovement));
-			// console.log("pitch:" + heading);
+			// plane.upX = newUp[0];
+			// plane.upY = newUp[1];
+			// plane.upZ = newUp[2];
+			// plane.headingX = newHeading[0];
+			// plane.headingY = newHeading[1];
+			// plane.headingZ = newHeading[2];
+
+
+			let rollAccel = Troll / specs.Iroll;
+			let rollAxis = newHeading;
+			plane.omegaRoll += rollAccel * dt;
+			let rollMovement = 0.5 * rollAccel * dt * dt + plane.omegaRoll * dt;
+			newUp = utils.normalize(utils.rotate(up, rollAxis, rollMovement));
 
 			plane.upX = newUp[0];
 			plane.upY = newUp[1];
 			plane.upZ = newUp[2];
-
 			plane.headingX = newHeading[0];
 			plane.headingY = newHeading[1];
 			plane.headingZ = newHeading[2];
-
 
 			/*
 				0: index
