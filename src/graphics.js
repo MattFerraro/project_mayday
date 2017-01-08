@@ -54,8 +54,8 @@ function buildScene() {
 
     // Add flat plane!
     let flatPlane = new THREE.PlaneGeometry(30, 30);
-    for (var i = 0; i < 50; i++) {
-        for (var j = 0; j < 50; j++) {
+    for (var i = 0; i < 80; i++) {
+        for (var j = 0; j < 80; j++) {
             if (j % 2 == 0 ^ i % 2 == 0) {
                 var tile = new THREE.Mesh(flatPlane, yellowMaterial);
             }
@@ -71,9 +71,22 @@ function buildScene() {
     return scene;
 }
 
+function addDashboard(scene, camera) {
+    // sphereGeometry = new THREE.SphereGeometry( 5, 32, 32 );
+    // var material = new THREE.MeshBasicMaterial( {color: 0xffff00} );
+    let flatPlane = new THREE.PlaneGeometry(20, 20);
+    let blueMaterial = new THREE.MeshPhongMaterial({ color: 0x0000CC });
+
+    var fixedPlate = new THREE.Mesh( flatPlane, blueMaterial );
+    // fixedPlate.position.setX(val);
+    // console.log(val);
+    // camera.add(fixedPlate);
+}
+
 module.exports = {
 	buildRenderer: buildRenderer,
 	buildCamera: buildCamera,
 	buildScene: buildScene,
-	addLighting: addLighting
+	addLighting: addLighting,
+    addDashboard: addDashboard
 }

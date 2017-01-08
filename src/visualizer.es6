@@ -17,6 +17,7 @@ function init() {
     camera = graphics.buildCamera();
     scene = graphics.buildScene();
     graphics.addLighting(scene);
+    graphics.addDashboard(scene, camera);
     document.body.appendChild( renderer.domElement );
 }
 
