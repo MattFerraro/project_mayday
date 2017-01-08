@@ -1,3 +1,5 @@
+'use strict'
+
 // Single vector operations
 function mag(vec) {
 	var mag = Math.sqrt(
@@ -16,6 +18,9 @@ function normalize(vec) {
 		vec[0] * vec[0] +
 		vec[1] * vec[1] +
 		vec[2] * vec[2]);
+	if (mag === 0) {
+		throw new Error("Cannot normalize");
+	}
 	var scaled = [
 		vec[0] / mag,
 		vec[1] / mag,
@@ -29,12 +34,12 @@ function scale(vec, scale) {
 
 
 // Two vector operations
-function plus(...vecs) {
+function plus() {
 	let retVal = [0, 0, 0];
-	for (var i = 0; i < vecs.length; i++) {
-		retVal[0] += vecs[i][0];
-		retVal[1] += vecs[i][1];
-		retVal[2] += vecs[i][2];
+	for (var i = 0; i < arguments.length; i++) {
+		retVal[0] += arguments[i][0];
+		retVal[1] += arguments[i][1];
+		retVal[2] += arguments[i][2];
 	}
 	return retVal;
 }
