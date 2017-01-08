@@ -33,17 +33,19 @@ function animate() {
     let plane = globalState.blue[0];
 
     // Set camera position
-    camera.position.setX(plane.x);
-    camera.position.setY(plane.y);
-    camera.position.setZ(plane.z);
+    camera.position.setX(plane.position.x);
+    camera.position.setY(plane.position.y);
+    camera.position.setZ(plane.position.z);
 
     // Set camera up vector
-    camera.up = new THREE.Vector3(plane.upX, plane.upY, plane.upZ);
+    camera.up = plane.up.clone();
+    // camera.up = new THREE.Vector3(plane.upX, plane.upY, plane.upZ);
 
     // Set camera lookat vector
-    let a = new THREE.Vector3(plane.headingX, plane.headingY, plane.headingZ);
-    a.add(camera.position);
-    camera.lookAt(a);
+    // let a = new THREE.Vector3(plane.headingX, plane.headingY, plane.headingZ);
+    let heading = plane.heading.clone();
+    heading.add(camera.position);
+    camera.lookAt(heading);
 
     requestAnimationFrame( animate );
     renderer.render( scene, camera );
