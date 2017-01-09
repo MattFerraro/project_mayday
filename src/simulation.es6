@@ -51,7 +51,7 @@ function applyCommands(globalState, commands, color) {
 		plane[command.input] = command.value;
 	}
 }
-
+var minAoa = 10;
 function updateState(globalState, dt) {
 	let newState = _.clone(globalState);
 	let teams = [newState.red, newState.blue];
@@ -61,9 +61,14 @@ function updateState(globalState, dt) {
 			let specs = planeSpecs.planeSpecs[plane.type];
 
 			// USEFUL VECTORS AND VALUES ****************
-			let heading = plane.heading;
-			let up = plane.up;
-			let velocity = plane.velocity;
+			let heading = plane.heading.clone().normalize();
+			let up = plane.up.clone().normalize();
+			let velocity = plane.velocity.clone();
+
+			let liftDirection = up.clone().projectOnPlane(velocity).normalize();
+			let pitchAxis = up.clone().cross(heading).normalize();
+			let liftVelocity = velocity.clone().projectOnPlane(pitchAxis);
+			let velocityOnHeading = velocity.clone().projectOnVector(heading);
 
 			// velocity vector is a little more tricky if we
 			// want to calculate angle of attack
@@ -75,20 +80,27 @@ function updateState(globalState, dt) {
 			else {
 				// if we are still, we use velocity = heading
 				var velocityNorm = heading.clone().normalize();
+				console.log("still!");
 			}
 
 			// find angle of attack, cl and cd
 			let diff = heading.clone().sub(velocityNorm);
 
-
+			// let aoa = Math.asin(diff.clone().projectOnVector(up).length()) * 180 / Math.PI;
+			let aoa = Math.asin(diff.clone().projectOnVector(up).dot(up)) * 180 / Math.PI;
 			// project the velocity vector onto the plane described by the up/heading vectors
-			let upHeadingNormal = up.clone().cross(heading);
-			let projectedVelocity = velocityNorm.clone().projectOnPlane(upHeadingNormal);
-			let aoa = projectedVelocity.angleTo(heading);
+			let projectedVelocity = velocityNorm.clone().projectOnPlane(pitchAxis);
+			// let aoa2 = projectedVelocity.angleTo(heading) * 180 / Math.PI;
+			// console.log(aoa, aoa2, aoa - aoa2);
+			// if (aoa2 < minAoa) {
+			// 	minAoa = aoa2;
+			// }
+			console.log(aoa);
 
 			// project the velocity vector on to the plane described by the up vector
-			let projectedVelocity2 = velocityNorm.clone().projectOnPlane(up);
-			let rudderAoa = projectedVelocity2.angleTo(heading);
+			// let projectedVelocity2 = velocityNorm.clone().projectOnPlane(up);
+			// let rudderAoa = projectedVelocity2.angleTo(heading);
+			// let rudderAoa = liftVelocity.angleTo(velocity) * 180 / Math.PI;
 
 			// let aoa = Math.asin(diff.clone().projectOnVector(up).length()) * 180 / Math.PI;
 			// let aoa = Math.asin(utils.dot(diff, up)) * 180 / Math.PI;
@@ -98,6 +110,7 @@ function updateState(globalState, dt) {
 			// let rudderUp = up.clone().cross(heading);
 			// let rudderUp = utils.cross(up, heading);
 			// let rudderAoa = Math.asin(utils.dot(diff, rudderUp)) * 180 / Math.PI;
+			let rudderAoa = Math.asin(diff.clone().projectOnVector(pitchAxis).length()) * 180 / Math.PI;
 
 			// let firstCross = utils.cross(heading, velocityNorm);
 			// let secondCross = utils.cross(firstCross, up);
@@ -112,9 +125,9 @@ function updateState(globalState, dt) {
 			// let velocityOnHeading = utils.scale(velocity, utils.dot(velocityNorm, heading));
 			// If the airplane is crabbing, we get cosine loss of velocity.
 			// However if the airplane is pulling up, we get full velocity
-			let liftVelocity = velocity.clone().projectOnPlane(upHeadingNormal);
-			let liftDirection = velocityNorm.clone().cross(upHeadingNormal).normalize();
-			let velocityOnHeading = velocity.clone().projectOnVector(heading);
+
+			// let liftDirection = velocityNorm.clone().cross(pitchAxis).normalize();
+
 			// console.log(utils.mag(velocity), utils.mag(velocityOnHeading));
 
 
@@ -150,11 +163,11 @@ function updateState(globalState, dt) {
 			// console.log("F net:", Fnet);
 
 			// if near the ground, the landing gear pushes you up
-			if (plane.z <= 1) {
-				let k = 30 * specs.mass;
-				let compression = 1 - plane.z;
-				let k2 = 2000;
-				let Fspring = new Vector3(0, 0, compression * k - plane.dz * k2);
+			if (plane.position.z <= 1) {
+				let k = specs.mass * 9.8 * 2;
+				let compression = 1 - plane.position.z;
+				let k2 = 8000;
+				let Fspring = new Vector3(0, 0, compression * k - velocity.z * k2);
 				// let Fspring = utils.scale([0, 0, 1], compression * k - plane.dz * Math.abs(k2));
 				// console.log("F spring:", Fspring);
 
@@ -183,11 +196,24 @@ function updateState(globalState, dt) {
 
 			// TORQUES ****************************************
 			let kPitchFriction = 200;
-			let Tpitch = (0.5 * rho * plane.elevator * liftVelocity.lengthSq() * specs.tailArea * specs.tailLength) - plane.omegaPitch * kPitchFriction;
+
+
+			// let Tpitch = -0.5 * rho * aoa * liftVelocity.lengthSq() * specs.tailArea * specs.tailLength;
+			let Tpitch = 0;
+			if (plane.position.z < 1) {
+				let pureZ = new Vector3(0, 0, 1);
+				let headingOffGround = heading.clone().projectOnVector(pureZ);
+				let groundAngle = Math.asin(headingOffGround.dot(pureZ)) * 180 / Math.PI;
+
+				//aoa gets driven to zero
+				Tpitch = (groundAngle * 200 - plane.omegaPitch * 200);
+			}
+
+			// let Tpitch = (0.5 * rho * plane.elevator * liftVelocity.lengthSq() * specs.tailArea * specs.tailLength) - plane.omegaPitch * kPitchFriction;
 			// K, but the horizontal stab tho...
-			Tpitch -= 0.5 * rho * aoa * liftVelocity.lengthSq() * specs.tailArea * specs.tailLength / 200;
+			// Tpitch -= 0.5 * rho * aoa * liftVelocity.lengthSq() * specs.tailArea * specs.tailLength / 200;
 			// Also the wing imparts down torque
-			Tpitch -= FliftMag * 0.05;
+			// Tpitch -= FliftMag * 0.05;
 
 			// console.log(aoa);
 
@@ -196,9 +222,9 @@ function updateState(globalState, dt) {
 			let Troll = (0.5 * rho * plane.aileron * velocityOnHeading.lengthSq() * specs.aileronArea * specs.wingLength) - plane.omegaRoll * kRollFriction;
 			// console.log(Troll);
 			if (isNaN(Troll) || Math.abs(Troll) > 399900) {
-				console.log("speed:", plane.dx, plane.dy, plane.dz);
+				// console.log("speed:", plane.dx, plane.dy, plane.dz);
 				console.log("projected speed:", velocityOnHeading);
-				console.log("speedSquared:", speedSquared);
+				// console.log("speedSquared:", speedSquared);
 				console.log("aileronArea:", specs.aileronArea);
 				console.log("wingLength:", specs.wingLength);
 				console.log("omegaRoll:", plane.omegaRoll);
@@ -212,10 +238,14 @@ function updateState(globalState, dt) {
 			Tyaw -= 0.5 * rho * rudderAoa * velocityOnHeading.lengthSq() * specs.rudderArea * specs.tailLength / 20;
 			// console.log(rudderAoa);
 
+			// Tpitch = 0;
+			Tyaw = 0;
+			Troll = 0;
+
 			// ROTATIONAL KINEMATICS **************************
 			let pitchAccel = Tpitch / specs.Ipitch;
 			// let pitchAxis = utils.cross(heading, up);
-			let pitchAxis = upHeadingNormal;
+			// let pitchAxis = pitchAxis.negate();
 			plane.omegaPitch += pitchAccel * dt;
 			let pitchMovement = 0.5 * pitchAccel * dt * dt + plane.omegaPitch * dt;
 			// let newUp = utils.normalize(utils.rotate(up, pitchAxis, pitchMovement));
@@ -343,23 +373,26 @@ function globalInit() {
 			y: 8000
 		}
 	};
+	var angle = -20 * Math.PI / 180;
+	let x = Math.cos(angle);
+	let y = Math.sin(angle);
 	state.blue = [
 		{
 			type: "fighter",
 			id: 0,
-			position: new THREE.Vector3(0, -8000, 50),
+			position: new THREE.Vector3(0, -8000, .7),
 			// x: 0,
 			// y: -8000,
 			// z: 100,
-			heading: new THREE.Vector3(0, 1, 0),
+			heading: new THREE.Vector3(0, x, -y),
 			// headingX: 0,
 			// headingY: 0,
 			// headingZ: -1,
-			up: new THREE.Vector3(0, 0, 1),
+			up: new THREE.Vector3(0, y, x),
 			// upX: 0,
 			// upY: 1,
 			// upZ: 0,
-			velocity: new THREE.Vector3(0, 23, 0),
+			velocity: new THREE.Vector3(0, 0, 0),
 			// dx: 0,
 			// dy: 0,
 			// dz: 0,
