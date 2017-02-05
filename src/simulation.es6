@@ -91,11 +91,9 @@ function updateState(globalState, dt) {
 			// project the velocity vector onto the plane described by the up/heading vectors
 			let projectedVelocity = velocityNorm.clone().projectOnPlane(pitchAxis);
 			// let aoa2 = projectedVelocity.angleTo(heading) * 180 / Math.PI;
-			// console.log(aoa, aoa2, aoa - aoa2);
 			// if (aoa2 < minAoa) {
 			// 	minAoa = aoa2;
 			// }
-			console.log(aoa);
 
 			// project the velocity vector on to the plane described by the up vector
 			// let projectedVelocity2 = velocityNorm.clone().projectOnPlane(up);
@@ -104,8 +102,7 @@ function updateState(globalState, dt) {
 
 			// let aoa = Math.asin(diff.clone().projectOnVector(up).length()) * 180 / Math.PI;
 			// let aoa = Math.asin(utils.dot(diff, up)) * 180 / Math.PI;
-			// console.log(aoa);
-			// console.log(plane.omegaRoll);
+
 
 			// let rudderUp = up.clone().cross(heading);
 			// let rudderUp = utils.cross(up, heading);
@@ -118,7 +115,6 @@ function updateState(globalState, dt) {
 			// let aoa = Math.asin(c) * 180 / Math.PI; // in degrees
 			let cl = specs.cl(aoa);
 			let cd = specs.cd(aoa);
-			// console.log(cl, cd);
 
 
 			// Project velocity onto heading
@@ -128,7 +124,6 @@ function updateState(globalState, dt) {
 
 			// let liftDirection = velocityNorm.clone().cross(pitchAxis).normalize();
 
-			// console.log(utils.mag(velocity), utils.mag(velocityOnHeading));
 
 
 			// FORCES **********************************
@@ -143,24 +138,21 @@ function updateState(globalState, dt) {
 			// let speedSquared = velocityOnHeading.lengthSq();
 			let FliftMag = 0.5 * rho * cl * specs.wingArea * liftVelocity.lengthSq();
 			// lift pulls you up
+			// console.log("Flift direction", liftDirection);
 			let Flift = liftDirection.clone().setLength(FliftMag);
-			// console.log("F lift:", utils.mag(Flift));
 
 			// thrust pushes you forward
 			let FthrustMag = plane.thrust * specs.maxThrust;
 			let Fthrust = heading.clone().setLength(FthrustMag);
-			// console.log("F thrust:", Fthrust);
 
 			// drag pulls you back
 			let FdragMag = 0.5 * rho * cd * specs.frontalArea * velocity.lengthSq();
-			//let Fdrag = utils.scale(velocityNorm, -FdragMag);
+
 			let Fdrag = velocityNorm.clone().negate().setLength(FdragMag);
-			// console.log("F drag:", Fdrag);
 
 			// let Fnet = utils.plus(utils.plus(utils.plus(Fgrav, Flift), Fdrag), Fthrust);
 			let Fnet = Fgrav.clone().add(Flift).add(Fdrag).add(Fthrust);
 
-			// console.log("F net:", Fnet);
 
 			// if near the ground, the landing gear pushes you up
 			if (plane.position.z <= 1) {
@@ -175,19 +167,28 @@ function updateState(globalState, dt) {
 				// console.log("F net:", Fnet);
 			}
 
+			// console.log("fgrav", Fgrav);
+			// console.log("flift", Flift);
+			// console.log("fdrag", Fdrag);
+			// console.log("fthrust", Fthrust);
+
 
 			// LINEAR KINEMATICS ******************************
 			// let accel = utils.scale(Fnet, 1/specs.mass);
 			let accel = Fnet.clone().divideScalar(specs.mass);
 
 			let deltaVelocity = accel.clone().multiplyScalar(dt);
+
+			// DO NOT UPDATE THE VELOCITY
 			plane.velocity.add(deltaVelocity);
+			// console.log(Fnet);
 
 			// plane.dx += accel[0] * dt;
 			// plane.dy += accel[1] * dt;
 			// plane.dz += accel[2] * dt;
 
 			let deltaPosition = accel.clone().multiplyScalar(dt * dt * 0.5).add(velocity.clone().multiplyScalar(dt));
+			// DO NOT UPDATE THE POSITION
 			plane.position.add(deltaPosition);
 
 			// plane.x += 0.5 * accel[0] * dt * dt + plane.dx * dt;
@@ -197,8 +198,6 @@ function updateState(globalState, dt) {
 			// TORQUES ****************************************
 			let kPitchFriction = 200;
 
-
-			// let Tpitch = -0.5 * rho * aoa * liftVelocity.lengthSq() * specs.tailArea * specs.tailLength;
 			let Tpitch = 0;
 			if (plane.position.z < 1) {
 				let pureZ = new Vector3(0, 0, 1);
@@ -206,8 +205,12 @@ function updateState(globalState, dt) {
 				let groundAngle = Math.asin(headingOffGround.dot(pureZ)) * 180 / Math.PI;
 
 				//aoa gets driven to zero
-				Tpitch = (groundAngle * 200 - plane.omegaPitch * 200);
+				Tpitch = (groundAngle * 200 - plane.omegaPitch * 0);
 			}
+			Tpitch += 0.5 * rho * (aoa - plane.elevator * 5) * liftVelocity.lengthSq() * specs.tailArea * specs.tailLength / 2;
+			Tpitch -= plane.omegaPitch * 2000;
+			Tpitch -= FliftMag * 0.5;
+			// Tpitch += 0.5 * rho * aoa * liftVelocity.lengthSq() * specs.tailArea * specs.tailLength / 2;
 
 			// let Tpitch = (0.5 * rho * plane.elevator * liftVelocity.lengthSq() * specs.tailArea * specs.tailLength) - plane.omegaPitch * kPitchFriction;
 			// K, but the horizontal stab tho...
@@ -215,28 +218,16 @@ function updateState(globalState, dt) {
 			// Also the wing imparts down torque
 			// Tpitch -= FliftMag * 0.05;
 
-			// console.log(aoa);
-
-			// console.log(utils.mag(velocity));
+			if (plane.position.z < 1) {
+				let pureZ = new Vector3(0, 0, 1);
+				// let
+			}
 			let kRollFriction = 200;
 			let Troll = (0.5 * rho * plane.aileron * velocityOnHeading.lengthSq() * specs.aileronArea * specs.wingLength) - plane.omegaRoll * kRollFriction;
-			// console.log(Troll);
-			if (isNaN(Troll) || Math.abs(Troll) > 399900) {
-				// console.log("speed:", plane.dx, plane.dy, plane.dz);
-				console.log("projected speed:", velocityOnHeading);
-				// console.log("speedSquared:", speedSquared);
-				console.log("aileronArea:", specs.aileronArea);
-				console.log("wingLength:", specs.wingLength);
-				console.log("omegaRoll:", plane.omegaRoll);
-				console.log("krollfric:", kRollFriction);
-				console.log("")
-				throw "error";
-			}
 
 			let kYawFriction = 2000;
 			let Tyaw = (0.5 * rho * plane.rudder * velocityOnHeading.lengthSq() * specs.rudderArea * specs.tailLength) - plane.omegaYaw * kYawFriction;
 			Tyaw -= 0.5 * rho * rudderAoa * velocityOnHeading.lengthSq() * specs.rudderArea * specs.tailLength / 20;
-			// console.log(rudderAoa);
 
 			// Tpitch = 0;
 			Tyaw = 0;
@@ -373,7 +364,7 @@ function globalInit() {
 			y: 8000
 		}
 	};
-	var angle = -20 * Math.PI / 180;
+	var angle = 0 * Math.PI / 180;
 	let x = Math.cos(angle);
 	let y = Math.sin(angle);
 	state.blue = [
@@ -384,11 +375,11 @@ function globalInit() {
 			// x: 0,
 			// y: -8000,
 			// z: 100,
-			heading: new THREE.Vector3(0, x, -y),
+			heading: new THREE.Vector3(0, 1, 0),
 			// headingX: 0,
 			// headingY: 0,
 			// headingZ: -1,
-			up: new THREE.Vector3(0, y, x),
+			up: new THREE.Vector3(y, 0, x),
 			// upX: 0,
 			// upY: 1,
 			// upZ: 0,

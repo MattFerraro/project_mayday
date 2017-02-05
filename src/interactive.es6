@@ -26,6 +26,7 @@ function init() {
     // let commands = teamBlue.getCommands(globalState, 0.5);
 }
 
+var count = 0;
 function animate() {
     // console.log("animating");
     simulation.step(globalState, DT);
@@ -47,7 +48,11 @@ function animate() {
     heading.add(camera.position);
     camera.lookAt(heading);
 
-    requestAnimationFrame( animate );
+    // count += 1;
+    if (count < 10) {
+        requestAnimationFrame( animate );
+
+    }
     renderer.render( scene, camera );
 }
 
