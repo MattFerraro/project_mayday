@@ -34,3 +34,10 @@ describe("Vector tests", function() {
     expect(utils.cross([0, 1, 0], [0, 0, 1])).toEqual([1, 0, 0]);
   });
 });
+
+
+describe("Lift tests", function() {
+    it("Calculates lift", function() {
+        expect()
+    });
+});
