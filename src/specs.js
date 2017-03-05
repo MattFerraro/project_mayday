@@ -1,10 +1,10 @@
 exports.planeSpecs = {
 	"fighter": {
-		mass: 1000,
-		maxThrust: 900,
+		mass: 1,
+		maxThrust: .5,
 
-		Iroll: 100,
-		wingLength: 10,
+		Iroll: 1,
+		wingLength: .1,
 		aileronArea: 2,
 
 		Ipitch: 100,
