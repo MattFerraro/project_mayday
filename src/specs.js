@@ -1,7 +1,7 @@
 exports.planeSpecs = {
 	"fighter": {
-		mass: 1,
-		maxThrust: .5,
+		mass: 1,  // kg
+		maxThrust: .1 * 9.8,  // N of thrust
 
 		Iroll: 1,
 		wingLength: .1,
@@ -26,6 +26,6 @@ exports.planeSpecs = {
 			return -x * x + 1.8;
 		},
 		wingArea: 38, // m^2
-		frontalArea: 16 // m^2
+		frontalArea: 2/1000 // m^2
 	}
 };

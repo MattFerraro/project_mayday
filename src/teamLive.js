@@ -48,11 +48,11 @@ exports.getCommands = function(globalState, dt) {
         }
     }
     else {
-        console.log("full");
+        // console.log("full");
         commands.push({
             id: 0,
             input: "thrust",
-            value: 0.0
+            value: 1.0
         });
     }
 
