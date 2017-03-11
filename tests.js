@@ -2,6 +2,8 @@
 var THREE = require("three");
 var physics = require("./src/physics.es6");
 let Vector3 = THREE.Vector3;
+let Quat = THREE.Quaternion;
+let PI = 3.14159;
 
 describe("Physics tests", function() {
     it("Calculates Kinematics", function() {
@@ -31,5 +33,27 @@ describe("Physics tests", function() {
 
         F = physics.springDamperForce(10, 1, 10, 0, 2);
         expect(F).toEqual(-2);
+    });
+});
+
+describe("Quat testing", function() {
+    it("tests quats", function() {
+        let overX = new Quat();
+        let overY = new Quat();
+        let overZ = new Quat();
+
+        let xAxis = new Vector3(1, 0, 0);
+        let yAxis = new Vector3(0, 1, 0);
+        let zAxis = new Vector3(0, 0, 1);
+
+        overX.setFromAxisAngle(xAxis, PI / 2);
+        overY.setFromAxisAngle(yAxis, PI / 2);
+        overZ.setFromAxisAngle(zAxis, PI / 2);
+
+        expect(yAxis.clone().applyQuaternion(overX).sub(zAxis).length()).toBeCloseTo(0);
+        expect(zAxis.clone().applyQuaternion(overY).sub(xAxis).length()).toBeCloseTo(0);
+        expect(xAxis.clone().applyQuaternion(overZ).sub(yAxis).length()).toBeCloseTo(0);
+
+        expect(xAxis.clone().applyQuaternion(overZ).applyQuaternion(overX).sub(zAxis).length()).toBeCloseTo(0);
     });
 });

@@ -52,7 +52,7 @@ exports.getCommands = function(globalState, dt) {
         commands.push({
             id: 0,
             input: "thrust",
-            value: 1.0
+            value: 0.0
         });
     }
 

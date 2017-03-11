@@ -1,6 +1,7 @@
 var utils = require('./utils.js');
 var planeSpecs = require('./specs.js');
 var physics = require("./physics.es6");
+var logging = require("./logging.es6");
 var _ = require('lodash');
 var THREE = require('three');
 var Vector3 = THREE.Vector3;
@@ -24,7 +25,7 @@ function initialize(red, blue) {
 
 function run(globalState, timesteps, dt=0.05) {
 	for (let i = 0; i < timesteps; i++) {
-		console.log("Timestep", i);
+		// console.log("Timestep", i);
 		step(globalState, dt);
 	}
 }
@@ -62,6 +63,7 @@ function updateState(globalState, dt) {
 			let specs = planeSpecs.planeSpecs[plane.type];
 
 			physics.updatePlaneState(plane, specs, dt);
+			logging.logPlane(plane);
 
 			// // USEFUL VECTORS AND VALUES ****************
 			// let heading = plane.heading.clone().normalize();
@@ -367,17 +369,19 @@ function globalInit() {
 			y: 8000
 		}
 	};
-	var angle = 0 * Math.PI / 180;
-	let x = Math.cos(angle);
-	let y = Math.sin(angle);
+	// var angle = 0 * Math.PI / 180;
+	// let x = Math.cos(angle);
+	// let y = Math.sin(angle);
 	state.blue = [
 		{
 			type: "fighter",
 			id: 0,
-			position: new THREE.Vector3(0, -8000, .7),
+			position: new THREE.Vector3(0, -8000, 1.0),
+			rightWing: new THREE.Vector3(1, 0, 0),
 			heading: new THREE.Vector3(0, 1, 0),
-			up: new THREE.Vector3(y, 0, x),
+			up: new THREE.Vector3(0, 0, 1),
 			velocity: new THREE.Vector3(0, 0, 0),
+			rotation: new THREE.Quaternion().setFromAxisAngle(new Vector3(1, 0, 0), -3.14159 / 1600),
 			omegaRoll: 0,
 			omegaPitch: 0,
 			omegaYaw: 0,
