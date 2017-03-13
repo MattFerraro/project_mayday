@@ -55,5 +55,8 @@ describe("Quat testing", function() {
         expect(xAxis.clone().applyQuaternion(overZ).sub(yAxis).length()).toBeCloseTo(0);
 
         expect(xAxis.clone().applyQuaternion(overZ).applyQuaternion(overX).sub(zAxis).length()).toBeCloseTo(0);
+
+
+        // expect(new Vector3(.15, .05, -.05).cross(new Vector3(0, 0, 3.7666))).toEqual(zAxis);
     });
 });

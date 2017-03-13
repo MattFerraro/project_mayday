@@ -1,8 +1,8 @@
 // var teamRed = require("./teamOne");
 // var teamBlue = require("./teamLive");
 import * as teamRed from "./teamOne";
-import * as teamBlue from "./teamLive";
-// import * as teamBlue from "./teamTwo";
+// import * as teamBlue from "./teamLive";
+import * as teamBlue from "./teamTwo";
 
 var simulation = require("./simulation");
 var DT = 0.05; // make this more accurate by measuring true FPS
@@ -28,7 +28,6 @@ function init() {
 
 var count = 0;
 function animate() {
-    // console.log("animating");
     simulation.step(globalState, DT);
 
     let plane = globalState.blue[0];
@@ -39,19 +38,16 @@ function animate() {
     camera.position.setZ(plane.position.z);
 
     // Set camera up vector
-    camera.up = plane.up.clone();
-    // camera.up = new THREE.Vector3(plane.upX, plane.upY, plane.upZ);
+    let up = new THREE.Vector3(0, 0, 1).applyQuaternion(plane.rotation);
+    camera.up = up;
 
     // Set camera lookat vector
-    // let a = new THREE.Vector3(plane.headingX, plane.headingY, plane.headingZ);
-    let heading = plane.heading.clone();
+    let heading = new THREE.Vector3(0, 1, 0).applyQuaternion(plane.rotation);
     heading.add(camera.position);
     camera.lookAt(heading);
 
-    // count += 1;
     if (count < 10) {
         requestAnimationFrame( animate );
-
     }
     renderer.render( scene, camera );
 }

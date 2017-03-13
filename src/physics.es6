@@ -2,6 +2,7 @@
 var THREE = require("three");
 let Vector3 = THREE.Vector3;
 let Quat = THREE.Quaternion;
+let Matrix3 = THREE.Matrix3;
 let RHO = 1.2; // kg / m^3
 let G = -9.8;  // m / s^2
 let XAXIS = new Vector3(1, 0, 0);
@@ -41,11 +42,7 @@ function springDamperForce(currentLength, compressionSpeed, length, k, b) {
 	return -k * compression - b * compressionSpeed;
 }
 
-function updatePlaneState(plane, spec, dt) {
-	// let heading =  plane.heading.clone().normalize();
-	// let up = plane.up.clone().normalize();
-	// let velocity = plane.velocity.clone();
-
+function updatePlaneState(plane, spec, dt, t) {
 	// Force calculations
 	let dragForce = getDragForce(plane, spec);
 	let thrustForce = getThrustForce(plane, spec);
@@ -53,44 +50,85 @@ function updatePlaneState(plane, spec, dt) {
 
 	let gearForceNet = new Vector3(0, 0, 0);
 	let gearTorqueNet = new Vector3(0, 0, 0);
+	// console.log();
 	for (let gear of spec.gear) {
-		let gearForce = getGearForce(gear, plane, spec);
-		// let gearTorque = getGearTorque(gear, gearForce);
+		let gearForce = getGearForce(gear, plane, spec, dt);
+		let gearTorque = getGearTorque(gear, plane, gearForce);
+
+		// console.log("GT", gearTorque.x, gearTorque.y, gearTorque.z);
 		gearForceNet.add(gearForce);
-		// gearTorqueNet.add(gearTorque);
+		gearTorqueNet.add(gearTorque);
 	}
-	console.log("GF:", gearForceNet.x, gearForceNet.y, gearForceNet.z);
+	// console.log("GTN:", gearTorqueNet.x, gearTorqueNet.y, gearTorqueNet.z);
 
 	let totalForce = dragForce.add(thrustForce).add(gearForceNet).add(gravityForce);
 	let totalAccel = totalForce.multiplyScalar(1/spec.mass);
 
+	// let totalTorque = gearTorqueNet.clone();
+	// let newAngularMomentum = totalTorque / spec.I + plane.angularMomentum;
+
+	let newOrientation = updateOrientation(plane, spec, dt);
+	plane.rotation.copy(newOrientation);
+
+	// console.log("omegas", omegas);
+	// console.log("newq", newq);
+	// console.log("heading", new Vector3(0, 1, 0).applyQuaternion(plane.rotation));
+
+	// let alphas = totalTorque / spec.I;
+	// let newOmegas = omegas + alphas * dt;
+
 	let newPosition = updatePosition(plane.position, plane.velocity, totalAccel, dt);
 	let newVelocity = updateVelocity(plane.velocity, totalAccel, dt);
-	plane.position.set(newPosition.x, newPosition.y, newPosition.z);
-	plane.velocity.set(newVelocity.x, newVelocity.y, newVelocity.z);
+	plane.position.copy(newPosition);
+	plane.velocity.copy(newVelocity);
 }
 
-function getGearTorque(gear, gearForce) {
+function updateOrientation(plane, spec, dt) {
+	let inverseI = new Matrix3().getInverse(spec.I);
+	let omegas = plane.angularMomentum.clone().applyMatrix3(inverseI);
 
+	let q = plane.rotation.clone();
+	let qw = -(q.x * omegas.x + q.y * omegas.y + q.z * omegas.z);
+	let qx =   q.w * omegas.x + q.z * omegas.y - q.y * omegas.z;
+	let qy =  -q.z * omegas.x + q.w * omegas.y + q.x * omegas.z;
+	let qz =   q.y * omegas.x - q.x * omegas.y + q.w * omegas.z;
+	let newq = new Quat().set(
+		q.x + qx * .5 * dt,
+		q.y + qy * .5 * dt,
+		q.z + qz * .5 * dt,
+		q.w + qw * .5 * dt).normalize();
+	return newq;
 }
 
-function getGearForce(gear, plane, spec) {
+function getGearTorque(gear, plane, gearForce) {
+	//gearForce is in the global frame, ie it has already been rotated
+	let r = gear.position.clone().applyQuaternion(plane.rotation);
+	// console.log("R", r.x, r.y, r.z);
+	// console.log("GF", gearForce.x, gearForce.y, gearForce.z);
+	let M = r.clone().cross(gearForce);
+	return M;
+}
+
+function getGearForce(gear, plane, spec, dt) {
 	let gearTip = gear.position.clone().applyQuaternion(plane.rotation).add(plane.position);
 	let gearVector = new Vector3(0, 0, -1).applyQuaternion(plane.rotation);
 	let gearToGroundDist = gearTip.z / -gearVector.z;
 
 	if (gearToGroundDist > gear.length) {
+		gear.lastLength = gear.length;
 		return new Vector3(0, 0, 0);
 	}
 	else {
-		let forceMag = springDamperForce(gearToGroundDist, 0, gear.length, gear.k, gear.b);
+		let compressionSpeed = (gear.lastLength - gearToGroundDist) / dt;
+
+		let forceMag = springDamperForce(gearToGroundDist, compressionSpeed, gear.length, gear.k, gear.b);
 		let force = gearVector.clone().negate().multiplyScalar(-forceMag);
+		gear.lastLength = gearToGroundDist;
 		return force;
 	}
 }
 
 function getDragForce(plane, spec) {
-	// let heading = plane.heading.clone().normalize();
 	let heading = new Vector3(0, 1, 0).applyQuaternion(plane.rotation);
 	let velocity = plane.velocity.clone();
 	let mag = 0.5 * RHO * velocity.lengthSq() * spec.frontalArea;

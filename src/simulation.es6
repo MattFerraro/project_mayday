@@ -13,6 +13,7 @@ var verbose = false;
 
 var teamRed = 0;
 var teamBlue = 0;
+var t = 0;
 
 function initialize(red, blue) {
 	teamRed = red;
@@ -37,7 +38,8 @@ function step(globalState, dt) {
 	applyCommands(globalState, redCommands, "red");
 	applyCommands(globalState, blueCommands, "blue");
 
-	globalState = updateState(globalState, dt);
+	globalState = updateState(globalState, dt, t);
+	t += dt;
 }
 
 function applyCommands(globalState, commands, color) {
@@ -54,7 +56,7 @@ function applyCommands(globalState, commands, color) {
 	}
 }
 var minAoa = 10;
-function updateState(globalState, dt) {
+function updateState(globalState, dt, t) {
 	let newState = _.clone(globalState);
 	let teams = [newState.red, newState.blue];
 
@@ -63,7 +65,7 @@ function updateState(globalState, dt) {
 			let specs = planeSpecs.planeSpecs[plane.type];
 
 			physics.updatePlaneState(plane, specs, dt);
-			logging.logPlane(plane);
+			logging.logPlane(plane, t);
 
 			// // USEFUL VECTORS AND VALUES ****************
 			// let heading = plane.heading.clone().normalize();
@@ -379,12 +381,9 @@ function globalInit() {
 			position: new THREE.Vector3(0, -8000, 1.0),
 			rightWing: new THREE.Vector3(1, 0, 0),
 			heading: new THREE.Vector3(0, 1, 0),
-			up: new THREE.Vector3(0, 0, 1),
 			velocity: new THREE.Vector3(0, 0, 0),
-			rotation: new THREE.Quaternion().setFromAxisAngle(new Vector3(1, 0, 0), -3.14159 / 1600),
-			omegaRoll: 0,
-			omegaPitch: 0,
-			omegaYaw: 0,
+			rotation: new THREE.Quaternion().setFromAxisAngle(new Vector3(1, 0, 0), 0),
+			angularMomentum: new Vector3(0, 0, 1),
 			thrust: 0,
 			elevator: 0,
 			rudder: 0,

@@ -6,16 +6,21 @@ function logEvent(event) {
 		event);
 }
 
-function logPlane(plane) {
+function logPlane(plane, t) {
 	console.log(
 		"PLANE_DATA",
+		t,   //1
 		plane.id,
-		plane.position.x, //2
-		plane.position.y, //3
-		plane.position.z, //4
-		plane.velocity.x, //5
+		plane.position.x, //3
+		plane.position.y, //4
+		plane.position.z, //5
+		plane.velocity.x,
 		plane.velocity.y,
-		plane.velocity.z)
+		plane.velocity.z,
+		plane.rotation.x,
+		plane.rotation.y,
+		plane.rotation.z,
+		plane.rotation.w)
 	// console.log(plane);
 }
 

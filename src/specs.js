@@ -1,6 +1,8 @@
 var THREE = require("three");
 var Vector3 = THREE.Vector3;
 
+var b = 3.0;
+
 exports.planeSpecs = {
 	"fighter": {
 		mass: 1,  // kg
@@ -31,22 +33,27 @@ exports.planeSpecs = {
 			{
 				position: new Vector3(.15, .05, -.05),
 				length: .5,
-				k: 10,
-				b: 10
+				k: 30,
+				b: b,
+				lastLength: .5
 			}, // front right
 			{
 				position: new Vector3(-.15, .05, -.05),
 				length: .5,
-				k: 10,
-				b: 10
+				k: 30,
+				b: b,
+				lastLength: .5
 			}, // front left
 			{
 				position: new Vector3(0, -.15, 0),
 				length: .5,
-				k: 10,
-				b: 10,
+				k: 30,
+				b: b,
+				lastLength: .5
 			}, // tail dragger
 		],
+
+		I: new THREE.Matrix3().set(2, 0, 0, 0, 2, 0, 0, 0, 2),
 		wingArea: 38, // m^2
 		frontalArea: 2/1000 // m^2
 	}
