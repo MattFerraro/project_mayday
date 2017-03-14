@@ -14,7 +14,7 @@ var Vector3 = THREE.Vector3;
 var $ = require("jquery");
 
 var renderer, camera, scene;
-var cameraMode = 0;
+var cameraMode = 1;
 var logLevel = 0;
 var maxCount = 500;
 
@@ -27,8 +27,7 @@ function init() {
     document.body.appendChild(renderer.domElement);
 
     globalState = simulation.initialize(teamRed, teamBlue);
-    // let commands = teamBlue.getCommands(globalState, 0.5);
-    //
+
     window.onkeypress = keypress;
 }
 
@@ -41,9 +40,6 @@ function animate() {
     if (cameraMode === 0) {
         // Set camera position
         camera.position.copy(plane.position);
-        // camera.position.setX(plane.position.x);
-        // camera.position.setY(plane.position.y);
-        // camera.position.setZ(plane.position.z);
 
         // Set camera up vector
         let up = new THREE.Vector3(0, 0, 1).applyQuaternion(plane.rotation);

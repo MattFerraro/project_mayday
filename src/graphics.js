@@ -88,15 +88,10 @@ function setScene(plane, cameraMode) {
 }
 
 function addDashboard(scene, camera) {
-    // sphereGeometry = new THREE.SphereGeometry( 5, 32, 32 );
-    // var material = new THREE.MeshBasicMaterial( {color: 0xffff00} );
     let flatPlane = new THREE.PlaneGeometry(20, 20);
     let blueMaterial = new THREE.MeshPhongMaterial({ color: 0x0000CC });
 
     var fixedPlate = new THREE.Mesh( flatPlane, blueMaterial );
-    // fixedPlate.position.setX(val);
-    // console.log(val);
-    // camera.add(fixedPlate);
 }
 
 module.exports = {

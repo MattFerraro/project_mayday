@@ -6,17 +6,9 @@ var b = 3.0;
 exports.planeSpecs = {
 	"fighter": {
 		mass: 1,  // kg
+		I: new THREE.Matrix3().set(.5, 0, 0, 0, .5, 0, 0, 0, .5),  // mks units
 		maxThrust: .1 * 9.8,  // N of thrust
-
-		Iroll: 1,
-		wingLength: .1,
-		aileronArea: 2,
-		Ipitch: 100,
-		tailLength: 10,
-		tailArea: 3,
-
-		Iyaw: 100,
-		rudderArea: 1.5,
+		frontalArea: 2/1000, // m^2
 
 		cd: function(aoa) {
 			// aoa is in degrees
@@ -31,21 +23,21 @@ exports.planeSpecs = {
 		},
 		gear: [
 			{
-				position: new Vector3(.15, .1, -0),
+				position: new Vector3(.15, .1, -0.05),
 				length: .5,
 				k: 30,
 				b: b,
 				lastLength: .5
 			}, // front right
 			{
-				position: new Vector3(-.15, .1, -0),
+				position: new Vector3(-.15, .1, -0.05),
 				length: .5,
 				k: 30,
 				b: b,
 				lastLength: .5
 			}, // front left
 			{
-				position: new Vector3(0, -.15, -0),
+				position: new Vector3(0, -.20, -0),
 				length: .5,
 				k: 30,
 				b: b,
@@ -53,8 +45,19 @@ exports.planeSpecs = {
 			}, // tail dragger
 		],
 
-		I: new THREE.Matrix3().set(.5, 0, 0, 0, .5, 0, 0, 0, .5),
-		wingArea: 38, // m^2
-		frontalArea: 2/1000 // m^2
+		tail: {
+			length: 1,
+			horizStab: {
+				cl: function(aoa) {
+					// aoa is in radians
+					return 2 * 3.14159 * aoa; //simple symmetrical wing
+				},
+				cd: function(aoa) {
+					//aoa is in radians
+					return aoa * aoa * 13 + 0.025;
+				}
+			}
+		}
+
 	}
 };

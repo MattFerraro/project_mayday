@@ -57,6 +57,8 @@ function updatePlaneState(plane, spec, dt, t) {
 		gearTorqueNet.add(gearTorque);
 	}
 
+	// let tailForce = getTailForce(plane, spec);
+
 	// Rotational Kinematics
 	let totalTorque = gearTorqueNet.clone(); // TODO: add other torques
 	let inverseI = new Matrix3().getInverse(spec.I);
@@ -89,6 +91,21 @@ function updateOrientation(plane, spec, dt) {
 		q.z + qz * .5 * dt,
 		q.w + qw * .5 * dt).normalize();
 	return newq;
+}
+
+function getTailForce(plane, spec) {
+	let heading = new Vector3(0, 1, 0).applyQuaternion(plane.rotation).normalize();
+	let up = new Vector3(0, 0, 1).applyQuaternion(plane.rotation);
+	let rightWing = new Vector3(1, 0, 0).applyQuaternion(plane.rotation);
+
+	let velocityProj = plane.velocity.clone().projectOnPlane(rightWing);
+	let velocityProjNorm = velocityProj.clone().normalize();
+	let diff = heading.clone().sub(velocityProjNorm);
+
+	// let aoa = Math.asin(diff.clone().dot(up)) * 180 / Math.PI;
+
+	// project velocity on to the plane that rightWing is perp. to
+
 }
 
 function getGearTorque(gear, plane, gearForce) {
