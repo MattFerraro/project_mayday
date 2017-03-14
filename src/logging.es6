@@ -1,4 +1,5 @@
 'use strict'
+var THREE = require("three");
 
 function logEvent(event) {
 	console.log(
@@ -7,6 +8,7 @@ function logEvent(event) {
 }
 
 function logPlane(plane, t) {
+	let ea = new THREE.Euler().setFromQuaternion(plane.rotation, 'XYZ').toVector3();
 	console.log(
 		"PLANE_DATA",
 		t,   //1
@@ -20,7 +22,10 @@ function logPlane(plane, t) {
 		plane.rotation.x,
 		plane.rotation.y,
 		plane.rotation.z,
-		plane.rotation.w)
+		plane.rotation.w,
+		ea.x, //13
+		ea.y,
+		ea.z);
 	// console.log(plane);
 }
 

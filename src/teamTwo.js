@@ -24,7 +24,7 @@ exports.getCommands = function(globalState, dt) {
 			commands.push({
 				id: plane.id,
 				input: "thrust",
-				value: 0
+				value: 1
 			});
 			applied = true;
 		}

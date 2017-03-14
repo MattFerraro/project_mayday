@@ -1,4 +1,5 @@
 var THREE = require("three");
+var sphere = 0;
 
 function addLighting(scene) {
     var ambientLight = new THREE.AmbientLight(0x202020);
@@ -30,6 +31,7 @@ function buildScene() {
 	scene = new THREE.Scene();
     let yellowMaterial = new THREE.MeshPhongMaterial({ color: 0xFFFF00 });
     let blueMaterial = new THREE.MeshPhongMaterial({ color: 0x0000CC });
+    let redMaterial = new THREE.MeshPhongMaterial({ color: 0xDD0000 });
     let cementMaterial = new THREE.MeshPhongMaterial({ color: 0x4C4C4C });
 
     // Cement:
@@ -68,7 +70,21 @@ function buildScene() {
             scene.add(tile);
         }
     }
+
+    // let geometry = new THREE.BoxGeometry( 3, 3, 3 );
+    let geometry = new THREE.ConeGeometry( .25, 2, 32 );
+    sphere = new THREE.Mesh( geometry, redMaterial);
+    sphere.position.set(0, -8000, 1);
+    scene.add(sphere);
+
     return scene;
+}
+
+function setScene(plane, cameraMode) {
+    if (cameraMode === 1) {
+        sphere.position.copy(plane.position);
+        sphere.quaternion.copy(plane.rotation);
+    }
 }
 
 function addDashboard(scene, camera) {
@@ -88,5 +104,6 @@ module.exports = {
 	buildCamera: buildCamera,
 	buildScene: buildScene,
 	addLighting: addLighting,
-    addDashboard: addDashboard
+    addDashboard: addDashboard,
+    setScene: setScene
 }

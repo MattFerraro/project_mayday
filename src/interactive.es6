@@ -10,9 +10,13 @@ var globalState;
 
 var graphics = require("./graphics");
 var THREE = require("three");
+var Vector3 = THREE.Vector3;
 var $ = require("jquery");
 
 var renderer, camera, scene;
+var cameraMode = 0;
+var logLevel = 0;
+var maxCount = 500;
 
 function init() {
     // Initialize all the graphics
@@ -20,36 +24,69 @@ function init() {
     camera = graphics.buildCamera();
     scene = graphics.buildScene();
     graphics.addLighting(scene);
-    document.body.appendChild( renderer.domElement );
+    document.body.appendChild(renderer.domElement);
 
     globalState = simulation.initialize(teamRed, teamBlue);
     // let commands = teamBlue.getCommands(globalState, 0.5);
+    //
+    window.onkeypress = keypress;
 }
 
 var count = 0;
 function animate() {
-    simulation.step(globalState, DT);
+    simulation.step(globalState, DT, logLevel);
 
     let plane = globalState.blue[0];
 
-    // Set camera position
-    camera.position.setX(plane.position.x);
-    camera.position.setY(plane.position.y);
-    camera.position.setZ(plane.position.z);
+    if (cameraMode === 0) {
+        // Set camera position
+        camera.position.copy(plane.position);
+        // camera.position.setX(plane.position.x);
+        // camera.position.setY(plane.position.y);
+        // camera.position.setZ(plane.position.z);
 
-    // Set camera up vector
-    let up = new THREE.Vector3(0, 0, 1).applyQuaternion(plane.rotation);
-    camera.up = up;
+        // Set camera up vector
+        let up = new THREE.Vector3(0, 0, 1).applyQuaternion(plane.rotation);
+        camera.up = up;
 
-    // Set camera lookat vector
-    let heading = new THREE.Vector3(0, 1, 0).applyQuaternion(plane.rotation);
-    heading.add(camera.position);
-    camera.lookAt(heading);
+        // Set camera lookat vector
+        let heading = new THREE.Vector3(0, 1, 0).applyQuaternion(plane.rotation);
+        heading.add(camera.position);
+        camera.lookAt(heading);
+    }
+    else if (cameraMode === 1) {
+        // Set camera position
+        let rightWing = new Vector3(10, 0, 0).applyQuaternion(plane.rotation).add(plane.position);
+        camera.position.copy(rightWing);
 
-    if (count < 10) {
+        // Set camera up vector
+        let up = new THREE.Vector3(0, 0, 1);
+        camera.up = up;
+
+        // Set camera lookat vector
+        camera.lookAt(plane.position);
+
+        graphics.setScene(plane, cameraMode);
+    }
+
+    count+=1;
+    if (count < maxCount) {
         requestAnimationFrame( animate );
     }
     renderer.render( scene, camera );
+}
+
+function keypress(event) {
+    if (event.key === 'c') {
+        switch(cameraMode) {
+            case 0:
+                cameraMode = 1;
+                break;
+            case 1:
+                cameraMode = 0;
+                break;
+        }
+    }
 }
 
 init();

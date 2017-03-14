@@ -24,21 +24,21 @@ function initialize(red, blue) {
 	return globalState;
 }
 
-function run(globalState, timesteps, dt=0.05) {
+function run(globalState, timesteps, dt=0.05, logLevel=0) {
 	for (let i = 0; i < timesteps; i++) {
 		// console.log("Timestep", i);
-		step(globalState, dt);
+		step(globalState, dt, logLevel);
 	}
 }
 
-function step(globalState, dt) {
+function step(globalState, dt, logLevel) {
 	let redCommands = teamRed.getCommands(globalState, dt);
 	let blueCommands = teamBlue.getCommands(globalState, dt);
 
 	applyCommands(globalState, redCommands, "red");
 	applyCommands(globalState, blueCommands, "blue");
 
-	globalState = updateState(globalState, dt, t);
+	globalState = updateState(globalState, dt, t, logLevel);
 	t += dt;
 }
 
@@ -56,7 +56,7 @@ function applyCommands(globalState, commands, color) {
 	}
 }
 var minAoa = 10;
-function updateState(globalState, dt, t) {
+function updateState(globalState, dt, t, logLevel) {
 	let newState = _.clone(globalState);
 	let teams = [newState.red, newState.blue];
 
@@ -65,7 +65,9 @@ function updateState(globalState, dt, t) {
 			let specs = planeSpecs.planeSpecs[plane.type];
 
 			physics.updatePlaneState(plane, specs, dt);
-			logging.logPlane(plane, t);
+			if (logLevel > 1) {
+				logging.logPlane(plane, t);
+			}
 
 			// // USEFUL VECTORS AND VALUES ****************
 			// let heading = plane.heading.clone().normalize();

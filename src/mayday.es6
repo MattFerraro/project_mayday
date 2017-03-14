@@ -8,12 +8,12 @@ var _ = require('lodash');
 
 var LOGLEVEL = 5;
 var n = 1;
-var TIMESTEPS = 40 * n;
+var TIMESTEPS = 60 * 6 * n;
 var DT = 0.05 * 1/n;
 
 function initialize() {
     let globalState = simulation.initialize(teamRed, teamBlue);
-    simulation.run(globalState, TIMESTEPS, DT);
+    simulation.run(globalState, TIMESTEPS, DT, LOGLEVEL);
 }
 
 initialize();
