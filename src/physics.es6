@@ -43,40 +43,31 @@ function springDamperForce(currentLength, compressionSpeed, length, k, b) {
 }
 
 function updatePlaneState(plane, spec, dt, t) {
-	// Force calculations
+	// Force and Torque calculations
 	let dragForce = getDragForce(plane, spec);
 	let thrustForce = getThrustForce(plane, spec);
 	let gravityForce = getGravityForce(plane, spec);
 
 	let gearForceNet = new Vector3(0, 0, 0);
 	let gearTorqueNet = new Vector3(0, 0, 0);
-	// console.log();
 	for (let gear of spec.gear) {
 		let gearForce = getGearForce(gear, plane, spec, dt);
 		let gearTorque = getGearTorque(gear, plane, gearForce);
-
-		// console.log("GT", gearTorque.x, gearTorque.y, gearTorque.z);
 		gearForceNet.add(gearForce);
 		gearTorqueNet.add(gearTorque);
 	}
-	// console.log("GTN:", gearTorqueNet.x, gearTorqueNet.y, gearTorqueNet.z);
 
-	let totalForce = dragForce.add(thrustForce).add(gearForceNet).add(gravityForce);
-	let totalAccel = totalForce.multiplyScalar(1/spec.mass);
-
-	// let totalTorque = gearTorqueNet.clone();
-	// let newAngularMomentum = totalTorque / spec.I + plane.angularMomentum;
-
+	// Rotational Kinematics
+	let totalTorque = gearTorqueNet.clone(); // TODO: add other torques
+	let inverseI = new Matrix3().getInverse(spec.I);
+	let changeInAngularMomentum = totalTorque.applyMatrix3(inverseI).multiplyScalar(dt);
+	plane.angularMomentum.add(changeInAngularMomentum);
 	let newOrientation = updateOrientation(plane, spec, dt);
 	plane.rotation.copy(newOrientation);
 
-	// console.log("omegas", omegas);
-	// console.log("newq", newq);
-	// console.log("heading", new Vector3(0, 1, 0).applyQuaternion(plane.rotation));
-
-	// let alphas = totalTorque / spec.I;
-	// let newOmegas = omegas + alphas * dt;
-
+	// Linear Kinematics
+	let totalForce = dragForce.add(thrustForce).add(gearForceNet).add(gravityForce);
+	let totalAccel = totalForce.multiplyScalar(1/spec.mass);
 	let newPosition = updatePosition(plane.position, plane.velocity, totalAccel, dt);
 	let newVelocity = updateVelocity(plane.velocity, totalAccel, dt);
 	plane.position.copy(newPosition);
@@ -120,9 +111,8 @@ function getGearForce(gear, plane, spec, dt) {
 	}
 	else {
 		let compressionSpeed = (gear.lastLength - gearToGroundDist) / dt;
-
 		let forceMag = springDamperForce(gearToGroundDist, compressionSpeed, gear.length, gear.k, gear.b);
-		let force = gearVector.clone().negate().multiplyScalar(-forceMag);
+		let force = new Vector3(0, 0, 1).multiplyScalar(-forceMag);
 		gear.lastLength = gearToGroundDist;
 		return force;
 	}

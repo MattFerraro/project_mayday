@@ -53,7 +53,7 @@ exports.planeSpecs = {
 			}, // tail dragger
 		],
 
-		I: new THREE.Matrix3().set(2, 0, 0, 0, 2, 0, 0, 0, 2),
+		I: new THREE.Matrix3().set(.5, 0, 0, 0, .5, 0, 0, 0, .5),
 		wingArea: 38, // m^2
 		frontalArea: 2/1000 // m^2
 	}

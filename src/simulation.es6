@@ -383,7 +383,7 @@ function globalInit() {
 			heading: new THREE.Vector3(0, 1, 0),
 			velocity: new THREE.Vector3(0, 0, 0),
 			rotation: new THREE.Quaternion().setFromAxisAngle(new Vector3(1, 0, 0), 0),
-			angularMomentum: new Vector3(0, 0, 1),
+			angularMomentum: new Vector3(0, 0, 0),
 			thrust: 0,
 			elevator: 0,
 			rudder: 0,
