@@ -23,31 +23,47 @@ exports.planeSpecs = {
 		},
 		gear: [
 			{
-				position: new Vector3(.15, .1, -0.05),
+				position: new Vector3(.25, .2, -0.15),
 				length: .5,
 				k: 30,
 				b: b,
 				lastLength: .5
 			}, // front right
 			{
-				position: new Vector3(-.15, .1, -0.05),
+				position: new Vector3(-.25, .2, -0.15),
 				length: .5,
 				k: 30,
 				b: b,
 				lastLength: .5
 			}, // front left
 			{
-				position: new Vector3(0, -.20, -0),
+				position: new Vector3(0, -.60, -0.10),
 				length: .5,
 				k: 30,
 				b: b,
-				lastLength: .5
+				lastLength: .5,
 			}, // tail dragger
 		],
 
 		tail: {
 			length: 1,
 			horizStab: {
+				chord: .2,
+				width: .5,
+				thickness: 0.01,
+				cl: function(aoa) {
+					// aoa is in radians
+					return 2 * 3.14159 * aoa; //simple symmetrical wing
+				},
+				cd: function(aoa) {
+					//aoa is in radians
+					return aoa * aoa * 13 + 0.025;
+				}
+			},
+			vertStab: {
+				chord: .2,
+				width: .25,
+				thickness: 0.01,
 				cl: function(aoa) {
 					// aoa is in radians
 					return 2 * 3.14159 * aoa; //simple symmetrical wing
@@ -57,6 +73,18 @@ exports.planeSpecs = {
 					return aoa * aoa * 13 + 0.025;
 				}
 			}
+		},
+
+		fuselage: {
+			length: .4
+		},
+
+		wing: {
+			position: new Vector3(0, 0, .1),
+			chordRoot: .3,
+			chordTip: .1,
+			length: .75,
+			rightWingDir: new Vector3(1, 0, .1)
 		}
 
 	}

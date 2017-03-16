@@ -16,7 +16,7 @@ var $ = require("jquery");
 var renderer, camera, scene;
 var cameraMode = 1;
 var logLevel = 0;
-var maxCount = 500;
+var maxCount = 200;
 
 function init() {
     // Initialize all the graphics
@@ -27,6 +27,9 @@ function init() {
     document.body.appendChild(renderer.domElement);
 
     globalState = simulation.initialize(teamRed, teamBlue);
+
+    let plane = globalState.blue[0];
+    graphics.addPlane(scene, plane);
 
     window.onkeypress = keypress;
 }
@@ -51,13 +54,29 @@ function animate() {
         camera.lookAt(heading);
     }
     else if (cameraMode === 1) {
+        // FROM OFF RIGHT WING
         // Set camera position
-        let rightWing = new Vector3(10, 0, 0).applyQuaternion(plane.rotation).add(plane.position);
+        let rightWing = new Vector3(2, 0, 0).applyQuaternion(plane.rotation).add(plane.position);
         camera.position.copy(rightWing);
 
         // Set camera up vector
         let up = new THREE.Vector3(0, 0, 1);
         camera.up = up;
+
+        // Set camera lookat vector
+        camera.lookAt(plane.position);
+
+        graphics.setScene(plane, cameraMode);
+    }
+    else if (cameraMode === 2) {
+        // FROM ABOVE
+        // Set camera position
+        let up = new Vector3(0, 0, 3).applyQuaternion(plane.rotation).add(plane.position);
+        camera.position.copy(up);
+
+        // Set camera up vector
+        let forward = new THREE.Vector3(0, 1, 0);
+        camera.up = forward;
 
         // Set camera lookat vector
         camera.lookAt(plane.position);
@@ -74,14 +93,14 @@ function animate() {
 
 function keypress(event) {
     if (event.key === 'c') {
-        switch(cameraMode) {
-            case 0:
-                cameraMode = 1;
-                break;
-            case 1:
-                cameraMode = 0;
-                break;
+        cameraMode += 1;
+        if (cameraMode > 2) {
+            cameraMode = 0;
         }
+    }
+    if (event.key === 'w') {
+        maxCount += 20;
+        animate();
     }
 }
 
