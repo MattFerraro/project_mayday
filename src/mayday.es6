@@ -8,8 +8,8 @@ var _ = require('lodash');
 
 var LOGLEVEL = 5;
 var n = 1;
-var TIMESTEPS = 60 * 6 * n;
-var DT = 0.05 * 1/n;
+var TIMESTEPS = 400;
+var DT = 0.05 * 8/6;
 
 function initialize() {
     let globalState = simulation.initialize(teamRed, teamBlue);

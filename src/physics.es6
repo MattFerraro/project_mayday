@@ -57,10 +57,12 @@ function updatePlaneState(plane, spec, dt, t) {
 		gearTorqueNet.add(gearTorque);
 	}
 
-	// let tailForce = getTailForce(plane, spec);
+	let tailForceLift = getTailForce(plane, spec);
+	let tailTorqueLift = getTailTorque(plane, spec, tailForceLift);
+	// console.log("ang", plane.angularMomentum, "tlf", tailForceLift);
 
 	// Rotational Kinematics
-	let totalTorque = gearTorqueNet.clone(); // TODO: add other torques
+	let totalTorque = gearTorqueNet.clone().add(tailTorqueLift); // TODO: add other torques
 	let inverseI = new Matrix3().getInverse(spec.I);
 	let changeInAngularMomentum = totalTorque.applyMatrix3(inverseI).multiplyScalar(dt);
 	plane.angularMomentum.add(changeInAngularMomentum);
@@ -68,7 +70,7 @@ function updatePlaneState(plane, spec, dt, t) {
 	plane.rotation.copy(newOrientation);
 
 	// Linear Kinematics
-	let totalForce = dragForce.add(thrustForce).add(gearForceNet).add(gravityForce);
+	let totalForce = dragForce.add(thrustForce).add(gearForceNet).add(gravityForce).add(tailForceLift);
 	let totalAccel = totalForce.multiplyScalar(1/spec.mass);
 	let newPosition = updatePosition(plane.position, plane.velocity, totalAccel, dt);
 	let newVelocity = updateVelocity(plane.velocity, totalAccel, dt);
@@ -93,19 +95,41 @@ function updateOrientation(plane, spec, dt) {
 	return newq;
 }
 
+function getTailTorque(plane, spec, tailForce) {
+	let r = new Vector3(0, -spec.tail.length, 0).applyQuaternion(plane.rotation);
+	let M = r.clone().cross(tailForce);
+	return M;
+}
+
 function getTailForce(plane, spec) {
-	let heading = new Vector3(0, 1, 0).applyQuaternion(plane.rotation).normalize();
-	let up = new Vector3(0, 0, 1).applyQuaternion(plane.rotation);
+	let horizStab = spec.tail.horizStab;
+	let heading = new Vector3(0, 1, 0).applyQuaternion(plane.rotation);
 	let rightWing = new Vector3(1, 0, 0).applyQuaternion(plane.rotation);
 
-	let velocityProj = plane.velocity.clone().projectOnPlane(rightWing);
-	let velocityProjNorm = velocityProj.clone().normalize();
-	let diff = heading.clone().sub(velocityProjNorm);
+	let inverseI = new Matrix3().getInverse(spec.I);
+	let omegas = plane.angularMomentum.clone().applyMatrix3(inverseI);
+	let apparentVelocityMag = omegas.x * spec.tail.length * .6;
+	let apparentVelocity = new Vector3(0, 0, 1).applyQuaternion(plane.rotation).multiplyScalar(apparentVelocityMag).add(plane.velocity);
 
-	// let aoa = Math.asin(diff.clone().dot(up)) * 180 / Math.PI;
+	let velocityProj = apparentVelocity.clone().projectOnPlane(rightWing);
+	let velocityProjProj = velocityProj.clone().projectOnVector(heading);
+	let diff = velocityProj.clone().sub(velocityProjProj);
+	let y = diff.length();
+	let x = velocityProjProj.length();
+	let angle = Math.atan2(y, x);
 
-	// project velocity on to the plane that rightWing is perp. to
+	let cl = horizStab.cl(angle);
+	let cd = horizStab.cd(angle);
 
+	// let dragForceMag = .5 * cd * RHO * apparentVelocity.lengthSq() * horizStab.thickness * horizStab.width;
+	let liftForceMag = .5 * cl * RHO * plane.velocity.lengthSq() * horizStab.chord * horizStab.width;
+
+	let liftForceDir = new Vector3(1, 0, 0).applyQuaternion(plane.rotation).cross(plane.velocity).normalize();
+
+	// let dragForceDir = new Vector3(0, -1, 0).applyQuaternion(plane.rotation);
+
+	let liftForce = liftForceDir.multiplyScalar(liftForceMag);
+	return liftForce;
 }
 
 function getGearTorque(gear, plane, gearForce) {

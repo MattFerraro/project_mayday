@@ -19,7 +19,7 @@ function buildRenderer() {
 }
 
 function buildCamera() {
-    camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 10000 );
+    camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, .1, 10000 );
     camera.position.set(0, 0, 10);
 
     let a = new THREE.Vector3(0, 1, 0);
@@ -85,8 +85,6 @@ function addPlane(scene, plane) {
         someMesh = new THREE.Mesh(someGeometry);
 
         if (typeof(position) !== 'undefined') {
-            console.log("have pos");
-            console.log(someMesh);
             someMesh.position.copy(position);
         }
 
@@ -100,8 +98,6 @@ function addPlane(scene, plane) {
 
     // center of mass
     addThing(new THREE.SphereGeometry(.025, 32, 32));
-
-    // addThing(new THREE.CylinderGeometry( .01, .01, 2, 32 ));
 
     // landing gear
     for (let gear of spec.gear) {
@@ -179,6 +175,11 @@ function addPlane(scene, plane) {
 
     planeMesh = new THREE.Mesh(singleGeometry, redMaterial);
     scene.add(planeMesh);
+
+    // wing connection to body
+    let rot = new THREE.Quaternion().setFromAxisAngle(new Vector3(1, 0, 0), 3.14159 / 2);
+    let offset = new THREE.Vector3().copy(wing.position).multiplyScalar(.5).setY(0);
+    addThing(new THREE.CylinderGeometry(.01, .01, wing.position.z, 32), rot, offset);
 }
 
 function setScene(plane, cameraMode) {

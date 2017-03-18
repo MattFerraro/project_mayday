@@ -1,7 +1,10 @@
+'use strict'
 var THREE = require("three");
 var Vector3 = THREE.Vector3;
 
 var b = 3.0;
+var pi = 3.14159;
+var l = 0.15;
 
 exports.planeSpecs = {
 	"fighter": {
@@ -24,24 +27,24 @@ exports.planeSpecs = {
 		gear: [
 			{
 				position: new Vector3(.25, .2, -0.15),
-				length: .5,
+				length: l,
 				k: 30,
 				b: b,
-				lastLength: .5
+				lastLength: l
 			}, // front right
 			{
 				position: new Vector3(-.25, .2, -0.15),
-				length: .5,
+				length: l,
 				k: 30,
 				b: b,
-				lastLength: .5
+				lastLength: l
 			}, // front left
 			{
-				position: new Vector3(0, -.60, -0.10),
-				length: .5,
-				k: 30,
+				position: new Vector3(0, -1.0, -0.05),
+				length: l,
+				k: 15,
 				b: b,
-				lastLength: .5,
+				lastLength: l,
 			}, // tail dragger
 		],
 
@@ -53,7 +56,22 @@ exports.planeSpecs = {
 				thickness: 0.01,
 				cl: function(aoa) {
 					// aoa is in radians
-					return 2 * 3.14159 * aoa; //simple symmetrical wing
+					if (aoa > 15*pi/180 && aoa < 20*pi/180) {
+						aoa = 15*pi/180;
+					}
+					else if (aoa > 20*pi/180) {
+						aoa = 0;
+					}
+
+					if (aoa < -15*pi/180 && aoa > -20*pi/180) {
+						aoa = -15*pi/180;
+					}
+					else if (aoa < -20*pi/180) {
+						aoa = 0;
+					}
+
+					let res = 2 * 3.14159 * aoa;
+					return res; //simple symmetrical wing
 				},
 				cd: function(aoa) {
 					//aoa is in radians
@@ -80,7 +98,7 @@ exports.planeSpecs = {
 		},
 
 		wing: {
-			position: new Vector3(0, 0, .1),
+			position: new Vector3(0, -.3 * 3/4, .1),
 			chordRoot: .3,
 			chordTip: .1,
 			length: .75,

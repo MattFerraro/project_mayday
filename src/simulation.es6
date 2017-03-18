@@ -66,7 +66,7 @@ function updateState(globalState, dt, t, logLevel) {
 
 			physics.updatePlaneState(plane, specs, dt);
 			if (logLevel > 1) {
-				logging.logPlane(plane, t);
+				logging.logPlane(plane, specs, t);
 			}
 
 			// // USEFUL VECTORS AND VALUES ****************
