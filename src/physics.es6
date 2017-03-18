@@ -108,7 +108,7 @@ function getTailForce(plane, spec) {
 
 	let inverseI = new Matrix3().getInverse(spec.I);
 	let omegas = plane.angularMomentum.clone().applyMatrix3(inverseI);
-	let apparentVelocityMag = omegas.x * spec.tail.length * .6;
+	let apparentVelocityMag = omegas.x * spec.tail.length * 0.4;
 	let apparentVelocity = new Vector3(0, 0, 1).applyQuaternion(plane.rotation).multiplyScalar(apparentVelocityMag).add(plane.velocity);
 
 	let velocityProj = apparentVelocity.clone().projectOnPlane(rightWing);
