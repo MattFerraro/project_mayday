@@ -10,7 +10,7 @@ let YAXIS = new Vector3(0, 1, 0);
 let ZAXIS = new Vector3(0, 0, 1);
 let GAIN = .1;
 
-console.log("B");
+console.log("A");
 function updateVelocity(velocity, accel, dt) {
 	let deltaVelocity = accel.clone().multiplyScalar(dt);
 	let newVelocity = velocity.clone().add(deltaVelocity);
@@ -60,17 +60,18 @@ function updatePlaneState(plane, spec, dt, t) {
 		gearTorqueNet.add(gearTorque);
 	}
 
-	let tailForceHoriz = getTailForce(plane, spec);
-	let tailTorqueHoriz = getTailTorque(plane, spec, tailForceHoriz);
+	// let tailForceHoriz = getTailForce(plane, spec);
+	// let tailTorqueHoriz = getTailTorque(plane, spec, tailForceHoriz);
 
 	let alpha, vProj;
 	[alpha, vProj] = getAngleOfAttack(plane, spec);
-	let wingForce = getWingForce(plane, spec, alpha, vProj);
+	// let wingForce = getWingForce(plane, spec, alpha, vProj);
 	// wingForce.set(0, 0, 0);
-	console.log(wingForce);
+	// console.log(wingForce);
 
 	// Rotational Kinematics
-	let totalTorque = gearTorqueNet.clone().add(tailTorqueHoriz); // TODO: add other torques
+	// let totalTorque = gearTorqueNet.clone().add(tailTorqueHoriz); // TODO: add other torques
+	let totalTorque = gearTorqueNet.clone(); // TODO: add other torques
 	let inverseI = new Matrix3().getInverse(spec.I);
 	let changeInAngularMomentum = totalTorque.applyMatrix3(inverseI).multiplyScalar(dt);
 	plane.angularMomentum.add(changeInAngularMomentum);
@@ -78,7 +79,8 @@ function updatePlaneState(plane, spec, dt, t) {
 	plane.rotation.copy(newOrientation);
 
 	// Linear Kinematics
-	let totalForce = dragForce.add(thrustForce).add(gearForceNet).add(gravityForce).add(tailForceHoriz).add(wingForce);
+	// let totalForce = dragForce.add(thrustForce).add(gearForceNet).add(gravityForce).add(tailForceHoriz).add(wingForce);
+	let totalForce = dragForce.add(thrustForce).add(gearForceNet).add(gravityForce);
 	let totalAccel = totalForce.multiplyScalar(1/spec.mass);
 	let newPosition = updatePosition(plane.position, plane.velocity, totalAccel, dt);
 	let newVelocity = updateVelocity(plane.velocity, totalAccel, dt);

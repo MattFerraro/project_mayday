@@ -64,3 +64,16 @@ The program is built using webpack. Running `webpack` will build all three varia
 You can also build using npm: `npm run build`, but that just runs webpack.
 
 To view the visualizer or the interactive page, run `http-server` and then visit `localhost:8080/pages/interactive`
+
+To run the code purely from the command line:
+
+```
+npm run run | grep PLANE_DATA | cut -c 12- > plane.dat
+```
+
+Then to view the results, you can use:
+
+```
+$ gnuplot
+gnuplot> plot "plane.dat" u 1:5 w lp
+```
