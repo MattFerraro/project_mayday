@@ -62,3 +62,5 @@ In other words: **you can fly the simulator in real time and dogfight against th
 The program is built using webpack. Running `webpack` will build all three variants for you. If you are actively developing, I recommend using `webpack -w`.
 
 You can also build using npm: `npm run build`, but that just runs webpack.
+
+To view the visualizer or the interactive page, run `http-server` and then visit `localhost:8080/pages/interactive`

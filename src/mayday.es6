@@ -8,7 +8,7 @@ var _ = require('lodash');
 
 var LOGLEVEL = 5;
 var n = 1;
-var TIMESTEPS = 1200 * 3;
+var TIMESTEPS = 1200;
 var DT = 0.05;
 
 function initialize() {

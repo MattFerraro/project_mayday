@@ -16,7 +16,7 @@ var $ = require("jquery");
 var renderer, camera, scene;
 var cameraMode = 1;
 var logLevel = 0;
-var maxCount = 4000;
+var maxCount = 1600;
 
 function init() {
     // Initialize all the graphics
@@ -39,6 +39,10 @@ function animate() {
     simulation.step(globalState, DT, logLevel);
 
     let plane = globalState.blue[0];
+
+    if (plane.velocity.length() > 300) {
+        maxCount = count;
+    }
 
     if (cameraMode === 0) {
         // Set camera position
