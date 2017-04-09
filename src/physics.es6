@@ -8,7 +8,9 @@ let G = -9.8;  // m / s^2
 let XAXIS = new Vector3(1, 0, 0);
 let YAXIS = new Vector3(0, 1, 0);
 let ZAXIS = new Vector3(0, 0, 1);
+let GAIN = .1;
 
+console.log("B");
 function updateVelocity(velocity, accel, dt) {
 	let deltaVelocity = accel.clone().multiplyScalar(dt);
 	let newVelocity = velocity.clone().add(deltaVelocity);
@@ -44,6 +46,7 @@ function springDamperForce(currentLength, compressionSpeed, length, k, b) {
 
 function updatePlaneState(plane, spec, dt, t) {
 	// Force and Torque calculations
+	// console.log(plane.velocity.length());
 	let dragForce = getDragForce(plane, spec);
 	let thrustForce = getThrustForce(plane, spec);
 	let gravityForce = getGravityForce(plane, spec);
@@ -57,12 +60,17 @@ function updatePlaneState(plane, spec, dt, t) {
 		gearTorqueNet.add(gearTorque);
 	}
 
-	let tailForceLift = getTailForce(plane, spec);
-	let tailTorqueLift = getTailTorque(plane, spec, tailForceLift);
-	// console.log("ang", plane.angularMomentum, "tlf", tailForceLift);
+	let tailForceHoriz = getTailForce(plane, spec);
+	let tailTorqueHoriz = getTailTorque(plane, spec, tailForceHoriz);
+
+	let alpha, vProj;
+	[alpha, vProj] = getAngleOfAttack(plane, spec);
+	let wingForce = getWingForce(plane, spec, alpha, vProj);
+	// wingForce.set(0, 0, 0);
+	console.log(wingForce);
 
 	// Rotational Kinematics
-	let totalTorque = gearTorqueNet.clone().add(tailTorqueLift); // TODO: add other torques
+	let totalTorque = gearTorqueNet.clone().add(tailTorqueHoriz); // TODO: add other torques
 	let inverseI = new Matrix3().getInverse(spec.I);
 	let changeInAngularMomentum = totalTorque.applyMatrix3(inverseI).multiplyScalar(dt);
 	plane.angularMomentum.add(changeInAngularMomentum);
@@ -70,12 +78,29 @@ function updatePlaneState(plane, spec, dt, t) {
 	plane.rotation.copy(newOrientation);
 
 	// Linear Kinematics
-	let totalForce = dragForce.add(thrustForce).add(gearForceNet).add(gravityForce).add(tailForceLift);
+	let totalForce = dragForce.add(thrustForce).add(gearForceNet).add(gravityForce).add(tailForceHoriz).add(wingForce);
 	let totalAccel = totalForce.multiplyScalar(1/spec.mass);
 	let newPosition = updatePosition(plane.position, plane.velocity, totalAccel, dt);
 	let newVelocity = updateVelocity(plane.velocity, totalAccel, dt);
 	plane.position.copy(newPosition);
 	plane.velocity.copy(newVelocity);
+}
+
+function getWingForce(plane, spec, alpha, vProj) {
+	let wing = spec.wing;
+	let cl = wing.cl(alpha);
+	let cd = wing.cd(alpha);
+	let chord = (wing.chordRoot + wing.chordTip) / 2;
+
+	// let dragForceMag = .5 * cd * RHO * vProj.lengthSq() * wing.thickness * wing.length * 2;
+	let liftForceMag = .5 * cl * RHO * vProj.lengthSq() * chord * wing.length * 2;
+
+	let liftForceDir = new Vector3(1, 0, 0).applyQuaternion(plane.rotation).cross(plane.velocity).normalize();
+	// let dragForceDir = plane.velocity.clone().negate().normalize();
+
+	let liftForce = liftForceDir.multiplyScalar(liftForceMag);
+	// let dragForce = dragForceDir.multiplyScalar(dragForceMag);
+	return liftForce.clone();//.add(dragForce);
 }
 
 function updateOrientation(plane, spec, dt) {
@@ -101,6 +126,21 @@ function getTailTorque(plane, spec, tailForce) {
 	return M;
 }
 
+function getAngleOfAttack(plane, spec) {
+	let heading = new Vector3(0, 1, 0).applyQuaternion(plane.rotation);
+	let rightWing = new Vector3(1, 0, 0).applyQuaternion(plane.rotation);
+
+	let velocityProj = plane.velocity.clone().projectOnPlane(rightWing);
+	let velocityProjProj = velocityProj.clone().projectOnVector(heading);
+
+	let diff = velocityProj.clone().sub(velocityProjProj);
+	let y = diff.length();
+	let x = velocityProjProj.length();
+	let angle = Math.atan2(y, x);
+
+	return [angle, velocityProj];
+}
+
 function getTailForce(plane, spec) {
 	let horizStab = spec.tail.horizStab;
 	let heading = new Vector3(0, 1, 0).applyQuaternion(plane.rotation);
@@ -108,7 +148,8 @@ function getTailForce(plane, spec) {
 
 	let inverseI = new Matrix3().getInverse(spec.I);
 	let omegas = plane.angularMomentum.clone().applyMatrix3(inverseI);
-	let apparentVelocityMag = omegas.x * spec.tail.length * 0.4;
+	let apparentVelocityMag = omegas.x * spec.tail.length;
+
 	let apparentVelocity = new Vector3(0, 0, 1).applyQuaternion(plane.rotation).multiplyScalar(apparentVelocityMag).add(plane.velocity);
 
 	let velocityProj = apparentVelocity.clone().projectOnPlane(rightWing);
@@ -118,25 +159,27 @@ function getTailForce(plane, spec) {
 	let x = velocityProjProj.length();
 	let angle = Math.atan2(y, x);
 
+	angle -= plane.elevator * horizStab.elevatorRange;
+
 	let cl = horizStab.cl(angle);
 	let cd = horizStab.cd(angle);
 
-	// let dragForceMag = .5 * cd * RHO * apparentVelocity.lengthSq() * horizStab.thickness * horizStab.width;
+	let dragForceMag = .5 * cd * RHO * apparentVelocity.lengthSq() * horizStab.thickness * horizStab.width;
 	let liftForceMag = .5 * cl * RHO * plane.velocity.lengthSq() * horizStab.chord * horizStab.width;
 
 	let liftForceDir = new Vector3(1, 0, 0).applyQuaternion(plane.rotation).cross(plane.velocity).normalize();
-
-	// let dragForceDir = new Vector3(0, -1, 0).applyQuaternion(plane.rotation);
+	let dragForceDir = plane.velocity.clone().negate().normalize();
 
 	let liftForce = liftForceDir.multiplyScalar(liftForceMag);
-	return liftForce;
+	let dragForce = dragForceDir.multiplyScalar(dragForceMag);
+
+	let tailForce = liftForce.clone().add(dragForce);
+	return tailForce;
 }
 
 function getGearTorque(gear, plane, gearForce) {
 	//gearForce is in the global frame, ie it has already been rotated
 	let r = gear.position.clone().applyQuaternion(plane.rotation);
-	// console.log("R", r.x, r.y, r.z);
-	// console.log("GF", gearForce.x, gearForce.y, gearForce.z);
 	let M = r.clone().cross(gearForce);
 	return M;
 }
@@ -162,7 +205,7 @@ function getGearForce(gear, plane, spec, dt) {
 function getDragForce(plane, spec) {
 	let heading = new Vector3(0, 1, 0).applyQuaternion(plane.rotation);
 	let velocity = plane.velocity.clone();
-	let mag = 0.5 * RHO * velocity.lengthSq() * spec.frontalArea;
+	let mag = 0.5 * RHO * velocity.lengthSq() * spec.frontalArea * spec.frontalCd;
 	return heading.multiplyScalar(-mag); // the negative makes it backwards
 }
 
