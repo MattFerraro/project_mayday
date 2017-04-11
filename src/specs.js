@@ -2,10 +2,10 @@
 var THREE = require("three");
 var Vector3 = THREE.Vector3;
 
-var b = 1.0;
+var b = 2.0;
 var pi = 3.14159;
 var l = 0.15;
-var landingGearK = 10;
+var landingGearK = 50;
 
 exports.planeSpecs = {
 	"fighter": {
@@ -32,35 +32,31 @@ exports.planeSpecs = {
 				length: l,
 				k: landingGearK,
 				b: b,
-				lastLength: l
 			}, // front right
 			{
 				position: new Vector3(-.25, .4, -0.15),
 				length: l,
 				k: landingGearK,
 				b: b,
-				lastLength: l
 			}, // front left
 			// {
 			// 	position: new Vector3(0, -1, -0.05),
 			// 	length: l,
 			// 	k: 20,
 			// 	b: b,
-			// 	lastLength: l,
+
 			// }, // tail dragger
 			{
 				position: new Vector3(.25, -.4, -0.15),
 				length: l,
 				k: landingGearK,
 				b: b,
-				lastLength: l,
 			}, // square
 			{
 				position: new Vector3(-.25, -.4, -0.15),
 				length: l,
 				k: landingGearK,
 				b: b,
-				lastLength: l,
 			} // square
 		],
 

@@ -192,14 +192,23 @@ function getGearForce(gear, plane, spec, dt) {
 	let gearToGroundDist = gearTip.z / -gearVector.z;
 
 	if (gearToGroundDist > gear.length) {
-		gear.lastLength = gear.length;
+		// gear.lastLength = gear.length;
 		return new Vector3(0, 0, 0);
 	}
 	else {
-		let compressionSpeed = (gear.lastLength - gearToGroundDist) / dt;
+		let totalAccel = new Vector3(0, 0, 0);
+		let newPosition = updatePosition(plane.position, plane.velocity, totalAccel, dt);
+		let newRotation = updateOrientation(plane, spec, dt);
+
+		let gearTip2 = gear.position.clone().applyQuaternion(newRotation).add(newPosition);
+		let gearVector2 = new Vector3(0, 0, -1).applyQuaternion(newRotation);
+		let gearToGroundDist2 = gearTip2.z / -gearVector2.z;
+
+		let compressionSpeed = (gearToGroundDist - gearToGroundDist2) / dt;
+
 		let forceMag = springDamperForce(gearToGroundDist, compressionSpeed, gear.length, gear.k, gear.b);
 		let force = new Vector3(0, 0, 1).multiplyScalar(-forceMag);
-		gear.lastLength = gearToGroundDist;
+
 		return force;
 	}
 }

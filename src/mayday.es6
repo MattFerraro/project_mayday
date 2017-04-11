@@ -6,10 +6,11 @@ var simulation = require("./simulation");
 
 var _ = require('lodash');
 
+var stretch = 80;
 var LOGLEVEL = 5;
 var n = 1;
-var TIMESTEPS = 70;
-var DT = 0.05;
+var TIMESTEPS = 70 * stretch;
+var DT = 0.05 / stretch;
 
 function initialize() {
     let globalState = simulation.initialize(teamRed, teamBlue);
