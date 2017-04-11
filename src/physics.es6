@@ -44,7 +44,7 @@ function springDamperForce(currentLength, compressionSpeed, length, k, b) {
 	return -k * compression - b * compressionSpeed;
 }
 
-function updatePlaneState(plane, spec, dt, t) {
+function updatedPlaneState(plane, spec, dt, t) {
 	// Force and Torque calculations
 	// console.log(plane.velocity.length());
 	let dragForce = getDragForce(plane, spec);
@@ -74,9 +74,10 @@ function updatePlaneState(plane, spec, dt, t) {
 	let totalTorque = gearTorqueNet.clone(); // TODO: add other torques
 	let inverseI = new Matrix3().getInverse(spec.I);
 	let changeInAngularMomentum = totalTorque.applyMatrix3(inverseI).multiplyScalar(dt);
-	plane.angularMomentum.add(changeInAngularMomentum);
-	let newOrientation = updateOrientation(plane, spec, dt);
-	plane.rotation.copy(newOrientation);
+	let newAngularMomentum = plane.angularMomentum.clone().add(changeInAngularMomentum);
+	// plane.angularMomentum.add(changeInAngularMomentum);
+	let newOrientation = updateOrientation(plane, spec, dt, newAngularMomentum);
+	// plane.rotation.copy(newOrientation);
 
 	// Linear Kinematics
 	// let totalForce = dragForce.add(thrustForce).add(gearForceNet).add(gravityForce).add(tailForceHoriz).add(wingForce);
@@ -84,8 +85,8 @@ function updatePlaneState(plane, spec, dt, t) {
 	let totalAccel = totalForce.multiplyScalar(1/spec.mass);
 	let newPosition = updatePosition(plane.position, plane.velocity, totalAccel, dt);
 	let newVelocity = updateVelocity(plane.velocity, totalAccel, dt);
-	plane.position.copy(newPosition);
-	plane.velocity.copy(newVelocity);
+
+	return [newAngularMomentum, newOrientation, newPosition, newVelocity];
 }
 
 function getWingForce(plane, spec, alpha, vProj) {
@@ -105,9 +106,12 @@ function getWingForce(plane, spec, alpha, vProj) {
 	return liftForce.clone();//.add(dragForce);
 }
 
-function updateOrientation(plane, spec, dt) {
+function updateOrientation(plane, spec, dt, angularMomentum) {
+	if (angularMomentum == null) {
+		angularMomentum = plane.angularMomentum;
+	}
 	let inverseI = new Matrix3().getInverse(spec.I);
-	let omegas = plane.angularMomentum.clone().applyMatrix3(inverseI);
+	let omegas = angularMomentum.clone().applyMatrix3(inverseI);
 
 	let q = plane.rotation.clone();
 	let qw = -(q.x * omegas.x + q.y * omegas.y + q.z * omegas.z);
@@ -198,7 +202,7 @@ function getGearForce(gear, plane, spec, dt) {
 	else {
 		let totalAccel = new Vector3(0, 0, 0);
 		let newPosition = updatePosition(plane.position, plane.velocity, totalAccel, dt);
-		let newRotation = updateOrientation(plane, spec, dt);
+		let newRotation = updateOrientation(plane, spec, dt, null);
 
 		let gearTip2 = gear.position.clone().applyQuaternion(newRotation).add(newPosition);
 		let gearVector2 = new Vector3(0, 0, -1).applyQuaternion(newRotation);
@@ -246,5 +250,5 @@ module.exports = {
 	updateOmega: updateOmega,
 	updateTheta: updateTheta,
 	springDamperForce: springDamperForce,
-	updatePlaneState: updatePlaneState
+	updatedPlaneState: updatedPlaneState
 };
