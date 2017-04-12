@@ -30,7 +30,7 @@ exports.planeSpecs = {
 			{
 				position: new Vector3(.25, .4, -0.15),
 				length: l,
-				k: landingGearK + 0.1,
+				k: landingGearK,
 				b: b,
 			}, // front right
 			{
@@ -39,25 +39,25 @@ exports.planeSpecs = {
 				k: landingGearK,
 				b: b,
 			}, // front left
-			// {
-			// 	position: new Vector3(0, -1, -0.05),
-			// 	length: l,
-			// 	k: 20,
-			// 	b: b,
+			{
+				position: new Vector3(0, -1, -0.05),
+				length: l,
+				k: landingGearK,
+				b: b,
 
-			// }, // tail dragger
-			{
-				position: new Vector3(.25, -.4, -0.15),
-				length: l,
-				k: landingGearK,
-				b: b,
-			}, // square
-			{
-				position: new Vector3(-.25, -.4, -0.15),
-				length: l,
-				k: landingGearK,
-				b: b,
-			} // square
+			}, // tail dragger
+			// {
+			// 	position: new Vector3(.25, -.4, -0.15),
+			// 	length: l,
+			// 	k: landingGearK,
+			// 	b: b,
+			// }, // square
+			// {
+			// 	position: new Vector3(-.25, -.4, -0.15),
+			// 	length: l,
+			// 	k: landingGearK,
+			// 	b: b,
+			// } // square
 		],
 
 		tail: {
