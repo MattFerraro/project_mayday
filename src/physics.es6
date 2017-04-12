@@ -13,14 +13,16 @@ let GAIN = .1;
 console.log("A");
 function updateVelocity(velocity, accel, dt) {
 	let deltaVelocity = accel.clone().multiplyScalar(dt);
-	let newVelocity = velocity.clone().add(deltaVelocity);
-	return newVelocity;
+	return deltaVelocity;
+	// let newVelocity = velocity.clone().add(deltaVelocity);
+	// return newVelocity;
 }
 
 function updatePosition(position, velocity, accel, dt) {
 	let deltaPosition = accel.clone().multiplyScalar(dt * dt * 0.5).add(velocity.clone().multiplyScalar(dt));
-	let newPosition = position.clone().add(deltaPosition);
-	return newPosition;
+	return deltaPosition;
+	// let newPosition = position.clone().add(deltaPosition);
+	// return newPosition;
 }
 
 function updateOmega(omega, angularAccel, dt) {
@@ -76,17 +78,23 @@ function updatedPlaneState(plane, spec, dt, t) {
 	let changeInAngularMomentum = totalTorque.applyMatrix3(inverseI).multiplyScalar(dt);
 	let newAngularMomentum = plane.angularMomentum.clone().add(changeInAngularMomentum);
 	// plane.angularMomentum.add(changeInAngularMomentum);
-	let newOrientation = updateOrientation(plane, spec, dt, newAngularMomentum);
+	let deltaRotation = updateOrientation(plane, spec, dt, newAngularMomentum);
+	// let newRotation = new Quat().set(
+	// 	plane.rotation.x + deltaRotation.x,
+	// 	plane.rotation.y + deltaRotation.y,
+	// 	plane.rotation.z + deltaRotation.z,
+	// 	plane.rotation.w + deltaRotation.w
+	// ).normalize();
 	// plane.rotation.copy(newOrientation);
 
 	// Linear Kinematics
 	// let totalForce = dragForce.add(thrustForce).add(gearForceNet).add(gravityForce).add(tailForceHoriz).add(wingForce);
 	let totalForce = dragForce.add(thrustForce).add(gearForceNet).add(gravityForce);
 	let totalAccel = totalForce.multiplyScalar(1/spec.mass);
-	let newPosition = updatePosition(plane.position, plane.velocity, totalAccel, dt);
-	let newVelocity = updateVelocity(plane.velocity, totalAccel, dt);
+	let deltaPosition = updatePosition(plane.position, plane.velocity, totalAccel, dt);
+	let deltaVelocity = updateVelocity(plane.velocity, totalAccel, dt);
 
-	return [newAngularMomentum, newOrientation, newPosition, newVelocity];
+	return [changeInAngularMomentum, deltaRotation, deltaPosition, deltaVelocity];
 }
 
 function getWingForce(plane, spec, alpha, vProj) {
@@ -118,12 +126,19 @@ function updateOrientation(plane, spec, dt, angularMomentum) {
 	let qx =   q.w * omegas.x + q.z * omegas.y - q.y * omegas.z;
 	let qy =  -q.z * omegas.x + q.w * omegas.y + q.x * omegas.z;
 	let qz =   q.y * omegas.x - q.x * omegas.y + q.w * omegas.z;
-	let newq = new Quat().set(
-		q.x + qx * .5 * dt,
-		q.y + qy * .5 * dt,
-		q.z + qz * .5 * dt,
-		q.w + qw * .5 * dt).normalize();
-	return newq;
+
+	let dq = new Quat().set(
+		qx * .5 * dt,
+		qy * .5 * dt,
+		qz * .5 * dt,
+		qw * .5 * dt);
+	return dq;
+	// let newq = new Quat().set(
+	// 	q.x + qx * .5 * dt,
+	// 	q.y + qy * .5 * dt,
+	// 	q.z + qz * .5 * dt,
+	// 	q.w + qw * .5 * dt).normalize();
+	// return newq;
 }
 
 function getTailTorque(plane, spec, tailForce) {
@@ -201,8 +216,15 @@ function getGearForce(gear, plane, spec, dt) {
 	}
 	else {
 		let totalAccel = new Vector3(0, 0, 0);
-		let newPosition = updatePosition(plane.position, plane.velocity, totalAccel, dt);
-		let newRotation = updateOrientation(plane, spec, dt, null);
+		let deltaPosition = updatePosition(plane.position, plane.velocity, totalAccel, dt);
+		let newPosition = plane.position.clone().add(deltaPosition);
+		let deltaRotation = updateOrientation(plane, spec, dt, null);
+		let newRotation = new Quat().set(
+			plane.rotation.x + deltaRotation.x,
+			plane.rotation.y + deltaRotation.y,
+			plane.rotation.z + deltaRotation.z,
+			plane.rotation.w + deltaRotation.w
+		).normalize();
 
 		let gearTip2 = gear.position.clone().applyQuaternion(newRotation).add(newPosition);
 		let gearVector2 = new Vector3(0, 0, -1).applyQuaternion(newRotation);

@@ -30,7 +30,7 @@ exports.planeSpecs = {
 			{
 				position: new Vector3(.25, .4, -0.15),
 				length: l,
-				k: landingGearK,
+				k: landingGearK + 0.1,
 				b: b,
 			}, // front right
 			{

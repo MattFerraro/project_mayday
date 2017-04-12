@@ -64,22 +64,37 @@ function updateState(globalState, dt, t, logLevel, method) {
 			let specs = planeSpecs.planeSpecs[plane.type];
 
 			if (method == "euler") {
-				let changeInAngularMomentum, newOrientation, newPosition, newVelocity;
-				[changeInAngularMomentum, newOrientation, newPosition, newVelocity] = physics.updatedPlaneState(plane, specs, dt, method);
+				let changeInAngularMomentum, deltaRotation, deltaPosition, deltaVelocity;
+				[changeInAngularMomentum, deltaRotation, deltaPosition, deltaVelocity] = physics.updatedPlaneState(plane, specs, dt, method);
 
 				plane.angularMomentum.add(changeInAngularMomentum);
-			    plane.rotation.copy(newOrientation);
-				plane.position.copy(newPosition);
-				plane.velocity.copy(newVelocity);
+				plane.position.add(deltaPosition);
+				plane.velocity.add(deltaVelocity);
+			    plane.rotation.set(
+			    	plane.rotation.x + deltaRotation.x,
+					plane.rotation.y + deltaRotation.y,
+					plane.rotation.z + deltaRotation.z,
+					plane.rotation.w + deltaRotation.w
+			    ).normalize();
 			}
 			else if (method == "rk4") {
-				let changeInAngularMomentum, newOrientation, newPosition, newVelocity;
-				[changeInAngularMomentum, newOrientation, newPosition, newVelocity] = physics.updatedPlaneState(plane, specs, dt, method);
+				let orig_am = plane.angularMomentum.clone();
+				let orig_rot = plane.rotation.clone();
+				let orig_pos = plane.position.clone();
+				let orig_vel = plane.velocity.clone();
 
-				plane.angularMomentum.add(changeInAngularMomentum);
-			    plane.rotation.copy(newOrientation);
-				plane.position.copy(newPosition);
-				plane.velocity.copy(newVelocity);
+				let k1_a, k1_b, k1_c, k1_d;
+				[k1_a, k1_b, k1_c, k1_d] = physics.updatedPlaneState(plane, specs, dt, method);
+
+				plane.angularMomentum.add(k1_a);
+				plane.position.add(k1_c);
+				plane.velocity.add(k1_d);
+			    plane.rotation.set(
+			    	plane.rotation.x + k1_b.x,
+					plane.rotation.y + k1_b.y,
+					plane.rotation.z + k1_b.z,
+					plane.rotation.w + k1_b.w
+			    ).normalize();
 			}
 
 			if (logLevel > 1) {
