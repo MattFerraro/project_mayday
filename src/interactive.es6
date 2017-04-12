@@ -1,6 +1,5 @@
-// var teamRed = require("./teamOne");
-// var teamBlue = require("./teamLive");
 import * as teamRed from "./teamOne";
+
 // import * as teamBlue from "./teamLive";
 import * as teamBlue from "./teamTwo";
 
@@ -16,7 +15,7 @@ var $ = require("jquery");
 var renderer, camera, scene;
 var cameraMode = 1;
 var logLevel = 0;
-var maxCount = 160;
+var maxCount = 1000;
 
 function init() {
     // Initialize all the graphics

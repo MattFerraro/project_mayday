@@ -62,8 +62,8 @@ function updatedPlaneState(plane, spec, dt, t) {
 		gearTorqueNet.add(gearTorque);
 	}
 
-	// let tailForceHoriz = getTailForce(plane, spec);
-	// let tailTorqueHoriz = getTailTorque(plane, spec, tailForceHoriz);
+	let tailForceHoriz = getTailForce(plane, spec);
+	let tailTorqueHoriz = getTailTorque(plane, spec, tailForceHoriz);
 
 	let alpha, vProj;
 	[alpha, vProj] = getAngleOfAttack(plane, spec);
@@ -72,8 +72,8 @@ function updatedPlaneState(plane, spec, dt, t) {
 	// console.log(wingForce);
 
 	// Rotational Kinematics
-	// let totalTorque = gearTorqueNet.clone().add(tailTorqueHoriz); // TODO: add other torques
-	let totalTorque = gearTorqueNet.clone(); // TODO: add other torques
+	let totalTorque = gearTorqueNet.clone().add(tailTorqueHoriz); // TODO: add other torques
+	// let totalTorque = gearTorqueNet.clone(); // TODO: add other torques
 	let inverseI = new Matrix3().getInverse(spec.I);
 	let changeInAngularMomentum = totalTorque.applyMatrix3(inverseI).multiplyScalar(dt);
 	let newAngularMomentum = plane.angularMomentum.clone().add(changeInAngularMomentum);
@@ -89,7 +89,8 @@ function updatedPlaneState(plane, spec, dt, t) {
 
 	// Linear Kinematics
 	// let totalForce = dragForce.add(thrustForce).add(gearForceNet).add(gravityForce).add(tailForceHoriz).add(wingForce);
-	let totalForce = dragForce.add(thrustForce).add(gearForceNet).add(gravityForce);
+	let totalForce = dragForce.add(thrustForce).add(gearForceNet).add(gravityForce).add(tailForceHoriz);
+	// let totalForce = dragForce.add(thrustForce).add(gearForceNet).add(gravityForce);
 	let totalAccel = totalForce.multiplyScalar(1/spec.mass);
 	let deltaPosition = updatePosition(plane.position, plane.velocity, totalAccel, dt);
 	let deltaVelocity = updateVelocity(plane.velocity, totalAccel, dt);

@@ -28,13 +28,13 @@ exports.planeSpecs = {
 		},
 		gear: [
 			{
-				position: new Vector3(.25, .4, -0.15),
+				position: new Vector3(.25, .2, -0.15),
 				length: l,
 				k: landingGearK,
 				b: b,
 			}, // front right
 			{
-				position: new Vector3(-.25, .4, -0.15),
+				position: new Vector3(-.25, .2, -0.15),
 				length: l,
 				k: landingGearK,
 				b: b,
