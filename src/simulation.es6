@@ -24,13 +24,13 @@ function initialize(red, blue) {
 	return globalState;
 }
 
-function run(globalState, timesteps, dt=0.05, logLevel=0) {
+function run(globalState, timesteps, dt=0.05, logLevel=0, method) {
 	for (let i = 0; i < timesteps; i++) {
-		step(globalState, dt, logLevel);
+		step(globalState, dt, logLevel, method);
 	}
 }
 
-function step(globalState, dt, logLevel, method="rk4") {
+function step(globalState, dt, logLevel, method) {
 	let redCommands = teamRed.getCommands(globalState, dt);
 	let blueCommands = teamBlue.getCommands(globalState, dt);
 
@@ -77,23 +77,107 @@ function updateState(globalState, dt, t, logLevel, method) {
 					plane.rotation.w + deltaRotation.w
 			    ).normalize();
 			}
-			else if (method == "rk4") {
+			else if (method == "trap") {
 				let orig_am = plane.angularMomentum.clone();
 				let orig_rot = plane.rotation.clone();
 				let orig_pos = plane.position.clone();
 				let orig_vel = plane.velocity.clone();
 
-				let k1_a, k1_b, k1_c, k1_d;
-				[k1_a, k1_b, k1_c, k1_d] = physics.updatedPlaneState(plane, specs, dt, method);
+				let changeInAngularMomentum0, deltaRotation0, deltaPosition0, deltaVelocity0;
+				[changeInAngularMomentum0, deltaRotation0, deltaPosition0, deltaVelocity0] = physics.updatedPlaneState(plane, specs, dt, method);
 
-				plane.angularMomentum.add(k1_a);
-				plane.position.add(k1_c);
-				plane.velocity.add(k1_d);
+				// Step forward
+				plane.angularMomentum.add(changeInAngularMomentum0);
+				plane.position.add(deltaPosition0);
+				plane.velocity.add(deltaVelocity0);
 			    plane.rotation.set(
-			    	plane.rotation.x + k1_b.x,
-					plane.rotation.y + k1_b.y,
-					plane.rotation.z + k1_b.z,
-					plane.rotation.w + k1_b.w
+			    	plane.rotation.x + deltaRotation0.x,
+					plane.rotation.y + deltaRotation0.y,
+					plane.rotation.z + deltaRotation0.z,
+					plane.rotation.w + deltaRotation0.w
+			    ).normalize();
+
+			    // Calculate derivatives at the next timestep
+			    let changeInAngularMomentum1, deltaRotation1, deltaPosition1, deltaVelocity1;
+				[changeInAngularMomentum1, deltaRotation1, deltaPosition1, deltaVelocity1] = physics.updatedPlaneState(plane, specs, dt, method);
+
+				// Average both estimates of the derivative
+				let changeInAngularMomentumAvg = (changeInAngularMomentum0.clone().add(changeInAngularMomentum1)).multiplyScalar(.5);
+				// let deltaRotationAvg = (deltaRotation0.clone().add(deltaRotation1)).multiplyScalar(.5);
+				let deltaRotationAvg = deltaRotation0.clone().slerp(deltaRotation1, 0.5);
+				let deltaPositionAvg = (deltaPosition0.clone().add(deltaPosition1)).multiplyScalar(.5);
+				let deltaVelocityAvg = (deltaVelocity0.clone().add(deltaVelocity1)).multiplyScalar(.5);
+
+				// console.log("CHANGES AVGD", changeInAngularMomentumAvg)
+
+				// Reset to our original values
+				plane.angularMomentum.copy(orig_am);
+				plane.rotation.copy(orig_rot);
+				plane.position.copy(orig_pos);
+				plane.velocity.copy(orig_vel);
+
+				// Step forward with the averaged estimates of derivative
+				plane.angularMomentum.add(changeInAngularMomentumAvg);
+				plane.position.add(deltaPositionAvg);
+				plane.velocity.add(deltaVelocityAvg);
+			    plane.rotation.set(
+			    	plane.rotation.x + deltaRotationAvg.x,
+					plane.rotation.y + deltaRotationAvg.y,
+					plane.rotation.z + deltaRotationAvg.z,
+					plane.rotation.w + deltaRotationAvg.w
+			    ).normalize();
+			}
+			else if (method == "rk4") {
+				// Right now this is just a clone of trapezoidal integration...
+				// How would I meaningfully take the weighted average of 4
+				// different quaternions?
+				let orig_am = plane.angularMomentum.clone();
+				let orig_rot = plane.rotation.clone();
+				let orig_pos = plane.position.clone();
+				let orig_vel = plane.velocity.clone();
+
+				let dam0, dr0, dp0, dv0;
+				[dam0, dr0, dp0, dv0] = physics.updatedPlaneState(plane, specs, dt, method);
+
+				// Step forward
+				plane.angularMomentum.add(dam0);
+				plane.position.add(dp0);
+				plane.velocity.add(dv0);
+			    plane.rotation.set(
+			    	plane.rotation.x + dr0.x,
+					plane.rotation.y + dr0.y,
+					plane.rotation.z + dr0.z,
+					plane.rotation.w + dr0.w
+			    ).normalize();
+
+			    // Calculate derivatives at the next timestep
+			    let dam1, dr1, dp1, dv1;
+				[dam1, dr1, dp1, dv1] = physics.updatedPlaneState(plane, specs, dt, method);
+
+				// Average both estimates of the derivative
+				let damAvg = (dam0.clone().add(dam1)).multiplyScalar(.5);
+				// let deltaRotationAvg = (dr0.clone().add(dr1)).multiplyScalar(.5);
+				let drAvg = dr0.clone().slerp(dr1, 0.5);
+				let dpAvg = (dp0.clone().add(dp1)).multiplyScalar(.5);
+				let dvAvg = (dv0.clone().add(dv1)).multiplyScalar(.5);
+
+				// console.log("CHANGES AVGD", damAvg)
+
+				// Reset to our original values
+				plane.angularMomentum.copy(orig_am);
+				plane.rotation.copy(orig_rot);
+				plane.position.copy(orig_pos);
+				plane.velocity.copy(orig_vel);
+
+				// Step forward with the averaged estimates of derivative
+				plane.angularMomentum.add(damAvg);
+				plane.position.add(dpAvg);
+				plane.velocity.add(dvAvg);
+			    plane.rotation.set(
+			    	plane.rotation.x + drAvg.x,
+					plane.rotation.y + drAvg.y,
+					plane.rotation.z + drAvg.z,
+					plane.rotation.w + drAvg.w
 			    ).normalize();
 			}
 

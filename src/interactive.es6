@@ -36,7 +36,7 @@ function init() {
 
 var count = 0;
 function animate() {
-    simulation.step(globalState, DT, logLevel);
+    simulation.step(globalState, DT, logLevel, "trap");
 
     let plane = globalState.blue[0];
 
@@ -91,6 +91,9 @@ function animate() {
     count+=1;
     if (count < maxCount) {
         requestAnimationFrame( animate );
+    }
+    else {
+        console.log("Done running");
     }
     renderer.render( scene, camera );
 }
