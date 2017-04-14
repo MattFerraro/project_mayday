@@ -67,7 +67,7 @@ function updatedPlaneState(plane, spec, dt, t) {
 
 	let alpha, vProj;
 	[alpha, vProj] = getAngleOfAttack(plane, spec);
-	// let wingForce = getWingForce(plane, spec, alpha, vProj);
+	let wingForce = getWingForce(plane, spec, alpha, vProj);
 	// wingForce.set(0, 0, 0);
 	// console.log(wingForce);
 
@@ -88,8 +88,8 @@ function updatedPlaneState(plane, spec, dt, t) {
 	// plane.rotation.copy(newOrientation);
 
 	// Linear Kinematics
-	// let totalForce = dragForce.add(thrustForce).add(gearForceNet).add(gravityForce).add(tailForceHoriz).add(wingForce);
-	let totalForce = dragForce.add(thrustForce).add(gearForceNet).add(gravityForce).add(tailForceHoriz);
+	let totalForce = dragForce.add(thrustForce).add(gearForceNet).add(gravityForce).add(tailForceHoriz).add(wingForce);
+	// let totalForce = dragForce.add(thrustForce).add(gearForceNet).add(gravityForce).add(tailForceHoriz);
 	// let totalForce = dragForce.add(thrustForce).add(gearForceNet).add(gravityForce);
 	let totalAccel = totalForce.multiplyScalar(1/spec.mass);
 	let deltaPosition = updatePosition(plane.position, plane.velocity, totalAccel, dt);
@@ -170,7 +170,8 @@ function getTailForce(plane, spec) {
 
 	let inverseI = new Matrix3().getInverse(spec.I);
 	let omegas = plane.angularMomentum.clone().applyMatrix3(inverseI);
-	let apparentVelocityMag = omegas.x * spec.tail.length;
+	let apparentVelocityMag = omegas.x * spec.tail.length * -2; // This negative sign here? took me a MONTH to find it. UGH!
+
 
 	let apparentVelocity = new Vector3(0, 0, 1).applyQuaternion(plane.rotation).multiplyScalar(apparentVelocityMag).add(plane.velocity);
 
@@ -187,6 +188,7 @@ function getTailForce(plane, spec) {
 	let cd = horizStab.cd(angle);
 
 	let dragForceMag = .5 * cd * RHO * apparentVelocity.lengthSq() * horizStab.thickness * horizStab.width;
+	dragForceMag = 0;
 	let liftForceMag = .5 * cl * RHO * plane.velocity.lengthSq() * horizStab.chord * horizStab.width;
 
 	let liftForceDir = new Vector3(1, 0, 0).applyQuaternion(plane.rotation).cross(plane.velocity).normalize();

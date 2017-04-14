@@ -20,11 +20,11 @@ function logPlane(plane, spec, t) {
 		plane.position.z, //5
 		plane.velocity.x,
 		plane.velocity.y,
-		plane.velocity.z,
+		plane.velocity.z, //8
 		plane.rotation.x,
 		plane.rotation.y,
-		plane.rotation.z,
-		plane.rotation.w,
+		plane.rotation.z, //11
+		plane.rotation.w, //12
 		ea.x, //13
 		ea.y,
 		ea.z,

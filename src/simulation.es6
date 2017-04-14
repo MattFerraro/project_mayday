@@ -77,7 +77,7 @@ function updateState(globalState, dt, t, logLevel, method) {
 					plane.rotation.w + deltaRotation.w
 			    ).normalize();
 			}
-			else if (method == "trap") {
+			else if (method == "verlet") {
 				let orig_am = plane.angularMomentum.clone();
 				let orig_rot = plane.rotation.clone();
 				let orig_pos = plane.position.clone();

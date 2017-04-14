@@ -7,11 +7,11 @@ var pi = 3.14159;
 var l = 0.15;
 var landingGearK = 50;
 
-exports.planeSpecs = {
+var planeSpecs = {
 	"fighter": {
-		mass: .5,  // kg
-		I: new THREE.Matrix3().set(.5, 0, 0, 0, .5, 0, 0, 0, .5),  // mks units
-		maxThrust: .1 * 9.8,  // N of thrust
+		mass: .9,  // kg
+		I: new THREE.Matrix3().set(1, 0, 0, 0, .6, 0, 0, 0, 1),  // mks units
+		maxThrust: .15 * 9.8,  // N of thrust
 		frontalArea: 2.0/100, // m^2,
 		frontalCd: 1.7,
 
@@ -63,8 +63,10 @@ exports.planeSpecs = {
 		tail: {
 			length: 1,
 			horizStab: {
-				chord: .2,
-				width: .5,
+				// chord: .20,
+				// width: .40,
+				chord: .25,
+				width: .55,
 				thickness: 0.01,
 				cl: function(aoa) {
 					console.log("tail aoa", aoa * 180 / pi);
@@ -83,7 +85,7 @@ exports.planeSpecs = {
 						aoa = 0;
 					}
 
-					let res = 2 * 3.14159 * aoa;
+					let res = 2 * 3.14159 * aoa * .9;
 					return res; //simple symmetrical wing
 				},
 				cd: function(aoa) {
@@ -131,7 +133,7 @@ exports.planeSpecs = {
 			position: new Vector3(0, -.3 * 3/4, .1),
 			chordRoot: .3,
 			chordTip: .15,
-			length: .75,  // length of a single wing
+			length: .8,  // length of a single wing
 			thickness: 0.025,
 			rightWingDir: new Vector3(1, 0, .1),
 			cl: function(aoa) {
@@ -163,3 +165,5 @@ exports.planeSpecs = {
 
 	}
 };
+
+exports.planeSpecs = planeSpecs;

@@ -15,7 +15,7 @@ var $ = require("jquery");
 var renderer, camera, scene;
 var cameraMode = 1;
 var logLevel = 0;
-var maxCount = 1000;
+var maxCount = 500;
 
 function init() {
     // Initialize all the graphics
@@ -35,7 +35,7 @@ function init() {
 
 var count = 0;
 function animate() {
-    simulation.step(globalState, DT, logLevel, "trap");
+    simulation.step(globalState, DT, logLevel, "verlet");
 
     let plane = globalState.blue[0];
 
