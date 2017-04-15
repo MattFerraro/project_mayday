@@ -9,7 +9,7 @@ var landingGearK = 50;
 
 var planeSpecs = {
 	"fighter": {
-		mass: .9,  // kg
+		mass: .8,  // kg
 		I: new THREE.Matrix3().set(1, 0, 0, 0, .6, 0, 0, 0, 1),  // mks units
 		maxThrust: .15 * 9.8,  // N of thrust
 		frontalArea: 2.0/100, // m^2,
@@ -132,8 +132,8 @@ var planeSpecs = {
 		wing: {
 			position: new Vector3(0, -.3 * 3/4, .1),
 			chordRoot: .3,
-			chordTip: .15,
-			length: .8,  // length of a single wing
+			chordTip: .20,
+			length: .85,  // length of a single wing
 			thickness: 0.025,
 			rightWingDir: new Vector3(1, 0, .1),
 			cl: function(aoa) {

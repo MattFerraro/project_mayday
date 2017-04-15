@@ -1,7 +1,7 @@
 import * as teamRed from "./teamOne";
 
-// import * as teamBlue from "./teamLive";
-import * as teamBlue from "./teamTwo";
+import * as teamBlue from "./teamLive";
+// import * as teamBlue from "./teamTwo";
 
 var simulation = require("./simulation");
 var DT = 0.05; // make this more accurate by measuring true FPS
@@ -15,7 +15,7 @@ var $ = require("jquery");
 var renderer, camera, scene;
 var cameraMode = 1;
 var logLevel = 0;
-var maxCount = 500;
+var maxCount = 5000;
 
 function init() {
     // Initialize all the graphics
