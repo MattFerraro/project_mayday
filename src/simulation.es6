@@ -251,6 +251,7 @@ function globalInit() {
 			angularMomentum: new Vector3(0, 0, 0),
 			thrust: 0,
 			elevator: 0,
+			elevatorTrim: .35,
 			rudder: 0,
 			aileron: 0,
 			health: 1,

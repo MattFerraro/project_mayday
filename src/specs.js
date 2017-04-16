@@ -11,7 +11,7 @@ var planeSpecs = {
 	"fighter": {
 		mass: .8,  // kg
 		I: new THREE.Matrix3().set(1, 0, 0, 0, .6, 0, 0, 0, 1),  // mks units
-		maxThrust: .15 * 9.8,  // N of thrust
+		maxThrust: .25 * 9.8,  // N of thrust
 		frontalArea: 2.0/100, // m^2,
 		frontalCd: 1.7,
 
@@ -28,19 +28,19 @@ var planeSpecs = {
 		},
 		gear: [
 			{
-				position: new Vector3(.25, .2, -0.15),
+				position: new Vector3(.25, .2, -0.2),
 				length: l,
 				k: landingGearK,
 				b: b,
 			}, // front right
 			{
-				position: new Vector3(-.25, .2, -0.15),
+				position: new Vector3(-.25, .2, -0.2),
 				length: l,
 				k: landingGearK,
 				b: b,
 			}, // front left
 			{
-				position: new Vector3(0, -1, -0.05),
+				position: new Vector3(0, -1, -0.00),
 				length: l,
 				k: landingGearK,
 				b: b,
@@ -69,7 +69,10 @@ var planeSpecs = {
 				width: .55,
 				thickness: 0.01,
 				cl: function(aoa) {
-					console.log("tail aoa", aoa * 180 / pi);
+					if (aoa < 0) {
+					// console.log("tail aoa", aoa * 180 / pi);
+						console.log("IS NEG");
+					}
 					// aoa is in radians
 					if (aoa > 15*pi/180 && aoa < 20*pi/180) {
 						aoa = 15*pi/180;
@@ -92,7 +95,7 @@ var planeSpecs = {
 					//aoa is in radians
 					return aoa * aoa * 13 + 0.025;
 				},
-				elevatorRange: 2 * pi / 180
+				elevatorRange: 8 * pi / 180
 			},
 			vertStab: {
 				chord: .2,
@@ -138,7 +141,7 @@ var planeSpecs = {
 			rightWingDir: new Vector3(1, 0, .1),
 			cl: function(aoa) {
 				// aoa is in radians
-				aoa += 3 * pi / 180;
+				aoa += 2 * pi / 180;
 				if (aoa > 15*pi/180 && aoa < 20*pi/180) {
 					aoa = 15*pi/180;
 				}
@@ -165,5 +168,8 @@ var planeSpecs = {
 
 	}
 };
+
+let inverseI = new THREE.Matrix3().getInverse(planeSpecs['fighter'].I);
+planeSpecs['fighter'].inverseI = inverseI;
 
 exports.planeSpecs = planeSpecs;

@@ -74,7 +74,7 @@ function updatedPlaneState(plane, spec, dt, t) {
 	// Rotational Kinematics
 	let totalTorque = gearTorqueNet.clone().add(tailTorqueHoriz); // TODO: add other torques
 	// let totalTorque = gearTorqueNet.clone(); // TODO: add other torques
-	let inverseI = new Matrix3().getInverse(spec.I);
+	let inverseI = spec.inverseI;
 	let changeInAngularMomentum = totalTorque.applyMatrix3(inverseI).multiplyScalar(dt);
 	let newAngularMomentum = plane.angularMomentum.clone().add(changeInAngularMomentum);
 	// plane.angularMomentum.add(changeInAngularMomentum);
@@ -119,7 +119,7 @@ function updateOrientation(plane, spec, dt, angularMomentum) {
 	if (angularMomentum == null) {
 		angularMomentum = plane.angularMomentum;
 	}
-	let inverseI = new Matrix3().getInverse(spec.I);
+	let inverseI = spec.inverseI;
 	let omegas = angularMomentum.clone().applyMatrix3(inverseI);
 
 	let q = plane.rotation.clone();
@@ -168,7 +168,7 @@ function getTailForce(plane, spec) {
 	let heading = new Vector3(0, 1, 0).applyQuaternion(plane.rotation);
 	let rightWing = new Vector3(1, 0, 0).applyQuaternion(plane.rotation);
 
-	let inverseI = new Matrix3().getInverse(spec.I);
+	let inverseI = spec.inverseI;
 	let omegas = plane.angularMomentum.clone().applyMatrix3(inverseI);
 	let apparentVelocityMag = omegas.x * spec.tail.length * -2; // This negative sign here? took me a MONTH to find it. UGH!
 
@@ -182,13 +182,13 @@ function getTailForce(plane, spec) {
 	let x = velocityProjProj.length();
 	let angle = Math.atan2(y, x);
 
-	angle -= plane.elevator * horizStab.elevatorRange;
+	angle -= (plane.elevator + plane.elevatorTrim) * horizStab.elevatorRange;
 
 	let cl = horizStab.cl(angle);
 	let cd = horizStab.cd(angle);
 
 	let dragForceMag = .5 * cd * RHO * apparentVelocity.lengthSq() * horizStab.thickness * horizStab.width;
-	dragForceMag = 0;
+	// dragForceMag = 0;
 	let liftForceMag = .5 * cl * RHO * plane.velocity.lengthSq() * horizStab.chord * horizStab.width;
 
 	let liftForceDir = new Vector3(1, 0, 0).applyQuaternion(plane.rotation).cross(plane.velocity).normalize();
