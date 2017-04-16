@@ -30,7 +30,9 @@ function logPlane(plane, spec, t) {
 		ea.z,
 		omegas.x, //16
 		omegas.y,
-		omegas.z);
+		omegas.z,
+		plane.alpha, // 19
+		plane.tailAngle);
 	// console.log(plane);
 }
 

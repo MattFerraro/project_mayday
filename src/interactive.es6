@@ -1,7 +1,7 @@
 import * as teamRed from "./teamOne";
 
-import * as teamBlue from "./teamLive";
-// import * as teamBlue from "./teamTwo";
+// import * as teamBlue from "./teamLive";
+import * as teamBlue from "./teamTwo";
 
 var simulation = require("./simulation");
 var DT = 0.05; // make this more accurate by measuring true FPS

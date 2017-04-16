@@ -15,6 +15,7 @@ exports.getCommands = function(globalState, dt) {
 	let commands = [];
 	count+=1;
 	// return commands;
+	let pushedDown = false;
 
 	// for each plane, create some commands
 	for (var i = globalState[color].length - 1; i >= 0; i--) {
@@ -30,22 +31,22 @@ exports.getCommands = function(globalState, dt) {
 				value: 1
 			});
 
-			// commands.push({
-			// 	id: plane.id,
-			// 	input: "elevator",
-			// 	value: elev //pull up slightly
-			// });
-			// console.log("elev", elev)
+			commands.push({
+				id: plane.id,
+				input: "elevator",
+				value: .2 //pull up somewhat
+			});
 
 			applied = true;
 		}
 
-		if (count === 300) {
+		if (plane.position.z > 40 && !pushedDown) {
 			commands.push({
 				id: plane.id,
 				input: "elevator",
-				value: 1 //pull up slightly
+				value: -.4 //push down up aggressively
 			});
+			pushedDown = true;
 		}
 
 	}

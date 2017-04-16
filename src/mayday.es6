@@ -10,7 +10,7 @@ var stretch = 1;
 var LOGLEVEL = 5;
 var n = 1;
 var DT = 0.05 / 1;
-var TIMESTEPS = 25 / DT;
+var TIMESTEPS = 45 / DT;
 
 function initialize() {
     let globalState = simulation.initialize(teamRed, teamBlue);

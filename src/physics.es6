@@ -67,6 +67,7 @@ function updatedPlaneState(plane, spec, dt, t) {
 
 	let alpha, vProj;
 	[alpha, vProj] = getAngleOfAttack(plane, spec);
+	plane.alpha = alpha;
 	let wingForce = getWingForce(plane, spec, alpha, vProj);
 	// wingForce.set(0, 0, 0);
 	// console.log(wingForce);
@@ -151,12 +152,16 @@ function getTailTorque(plane, spec, tailForce) {
 function getAngleOfAttack(plane, spec) {
 	let heading = new Vector3(0, 1, 0).applyQuaternion(plane.rotation);
 	let rightWing = new Vector3(1, 0, 0).applyQuaternion(plane.rotation);
+	let up = new Vector3(0, 0, 1).applyQuaternion(plane.rotation);
 
 	let velocityProj = plane.velocity.clone().projectOnPlane(rightWing);
 	let velocityProjProj = velocityProj.clone().projectOnVector(heading);
 
 	let diff = velocityProj.clone().sub(velocityProjProj);
-	let y = diff.length();
+
+	let s = -Math.sign( diff.clone().dot(up) );
+
+	let y = s * diff.length();
 	let x = velocityProjProj.length();
 	let angle = Math.atan2(y, x);
 
@@ -167,22 +172,29 @@ function getTailForce(plane, spec) {
 	let horizStab = spec.tail.horizStab;
 	let heading = new Vector3(0, 1, 0).applyQuaternion(plane.rotation);
 	let rightWing = new Vector3(1, 0, 0).applyQuaternion(plane.rotation);
+	let up = new Vector3(0, 0, 1).applyQuaternion(plane.rotation);
 
 	let inverseI = spec.inverseI;
 	let omegas = plane.angularMomentum.clone().applyMatrix3(inverseI);
-	let apparentVelocityMag = omegas.x * spec.tail.length * -2; // This negative sign here? took me a MONTH to find it. UGH!
+	let apparentVelocityMag = omegas.x * spec.tail.length * -3; // This negative sign here? took me a MONTH to find it. UGH!
 
 
-	let apparentVelocity = new Vector3(0, 0, 1).applyQuaternion(plane.rotation).multiplyScalar(apparentVelocityMag).add(plane.velocity);
+	let apparentVelocity = up.clone().multiplyScalar(apparentVelocityMag).add(plane.velocity);
 
 	let velocityProj = apparentVelocity.clone().projectOnPlane(rightWing);
 	let velocityProjProj = velocityProj.clone().projectOnVector(heading);
 	let diff = velocityProj.clone().sub(velocityProjProj);
-	let y = diff.length();
+
+	let s = -Math.sign( diff.clone().dot(up) );
+	console.log(s);
+
+	let y = s * diff.length();
 	let x = velocityProjProj.length();
 	let angle = Math.atan2(y, x);
 
 	angle -= (plane.elevator + plane.elevatorTrim) * horizStab.elevatorRange;
+
+	plane.tailAngle = angle;
 
 	let cl = horizStab.cl(angle);
 	let cd = horizStab.cd(angle);

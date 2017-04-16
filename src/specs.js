@@ -69,24 +69,27 @@ var planeSpecs = {
 				width: .55,
 				thickness: 0.01,
 				cl: function(aoa) {
-					if (aoa < 0) {
-					// console.log("tail aoa", aoa * 180 / pi);
-						console.log("IS NEG");
+					// aoa is in radians. convert to degrees
+					aoa = aoa * 180 / pi;
+
+					if (aoa > 15 && aoa < 20) {
+						aoa = 15;
 					}
-					// aoa is in radians
-					if (aoa > 15*pi/180 && aoa < 20*pi/180) {
-						aoa = 15*pi/180;
-					}
-					else if (aoa > 20*pi/180) {
+					else if (aoa > 20) {
 						aoa = 0;
+						// aoa = 17.5 - (aoa - 17.5);
 					}
 
-					if (aoa < -15*pi/180 && aoa > -20*pi/180) {
-						aoa = -15*pi/180;
+					if (aoa < -15 && aoa > -20) {
+						aoa = -15;
 					}
-					else if (aoa < -20*pi/180) {
+					else if (aoa < -20) {
 						aoa = 0;
+						// aoa = -17.5 + (-aoa - 17.5);
 					}
+
+					// convert back to radians
+					aoa = aoa * pi / 180;
 
 					let res = 2 * 3.14159 * aoa * .9;
 					return res; //simple symmetrical wing
@@ -102,23 +105,7 @@ var planeSpecs = {
 				width: .25,
 				thickness: 0.01,
 				cl: function(aoa) {
-					// aoa is in radians
-					if (aoa > 15*pi/180 && aoa < 20*pi/180) {
-						aoa = 15*pi/180;
-					}
-					else if (aoa > 20*pi/180) {
-						aoa = 0;
-					}
 
-					if (aoa < -15*pi/180 && aoa > -20*pi/180) {
-						aoa = -15*pi/180;
-					}
-					else if (aoa < -20*pi/180) {
-						aoa = 0;
-					}
-
-					let res = 2 * 3.14159 * aoa;
-					return res; //simple symmetrical wing
 				},
 				cd: function(aoa) {
 					//aoa is in radians
@@ -140,21 +127,28 @@ var planeSpecs = {
 			thickness: 0.025,
 			rightWingDir: new Vector3(1, 0, .1),
 			cl: function(aoa) {
-				// aoa is in radians
-				aoa += 2 * pi / 180;
-				if (aoa > 15*pi/180 && aoa < 20*pi/180) {
-					aoa = 15*pi/180;
+				// aoa is in radians. convert to degrees
+				aoa = aoa * 180 / pi;
+
+				aoa += 2;
+				if (aoa > 15 && aoa < 20) {
+					aoa = 15;
 				}
-				else if (aoa > 20*pi/180) {
+				else if (aoa > 20) {
 					aoa = 0;
+					// aoa = 17.5 - (aoa - 17.5);
 				}
 
-				if (aoa < -15*pi/180 && aoa > -20*pi/180) {
-					aoa = -15*pi/180;
+				if (aoa < -15 && aoa > -20) {
+					aoa = -15;
 				}
-				else if (aoa < -20*pi/180) {
+				else if (aoa < -20) {
 					aoa = 0;
+					// aoa = -17.5 + (-aoa - 17.5);
 				}
+
+				// convert back to radians
+				aoa = aoa * pi / 180;
 
 				let res = 2 * 3.14159 * aoa;
 				return res; //simple symmetrical wing
