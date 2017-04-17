@@ -40,7 +40,7 @@ exports.getCommands = function(globalState, dt) {
 			applied = true;
 		}
 
-		if (plane.position.z > 40 && !pushedDown) {
+		if (plane.position.z > 50 && !pushedDown) {
 			commands.push({
 				id: plane.id,
 				input: "elevator",

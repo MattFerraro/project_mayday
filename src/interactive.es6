@@ -1,7 +1,7 @@
 import * as teamRed from "./teamOne";
 
-// import * as teamBlue from "./teamLive";
-import * as teamBlue from "./teamTwo";
+import * as teamBlue from "./teamLive";
+// import * as teamBlue from "./teamTwo";
 
 var simulation = require("./simulation");
 var DT = 0.05; // make this more accurate by measuring true FPS
@@ -35,7 +35,8 @@ function init() {
 
 var count = 0;
 function animate() {
-    simulation.step(globalState, DT, logLevel, "verlet");
+    simulation.step(globalState, DT/2, logLevel, "verlet");
+    simulation.step(globalState, DT/2, logLevel, "verlet");
 
     let plane = globalState.blue[0];
 

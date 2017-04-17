@@ -186,7 +186,7 @@ function getTailForce(plane, spec) {
 	let diff = velocityProj.clone().sub(velocityProjProj);
 
 	let s = -Math.sign( diff.clone().dot(up) );
-	console.log(s);
+	// console.log(s);
 
 	let y = s * diff.length();
 	let x = velocityProjProj.length();

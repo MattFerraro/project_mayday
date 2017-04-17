@@ -9,7 +9,8 @@ function logEvent(event) {
 
 function logPlane(plane, spec, t) {
 	let ea = new THREE.Euler().setFromQuaternion(plane.rotation, 'XYZ').toVector3();
-	let inverseI = new THREE.Matrix3().getInverse(spec.I);
+	// let inverseI = new THREE.Matrix3().getInverse(spec.I);
+	let inverseI = spec.inverseI;
 	let omegas = plane.angularMomentum.clone().applyMatrix3(inverseI);
 	console.log(
 		"PLANE_DATA",
