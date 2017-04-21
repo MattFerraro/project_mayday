@@ -105,7 +105,30 @@ var planeSpecs = {
 				width: .25,
 				thickness: 0.01,
 				cl: function(aoa) {
+					// aoa is in radians. convert to degrees
+					aoa = aoa * 180 / pi;
 
+					if (aoa > 15 && aoa < 20) {
+						aoa = 15;
+					}
+					else if (aoa > 20) {
+						aoa = 0;
+						// aoa = 17.5 - (aoa - 17.5);
+					}
+
+					if (aoa < -15 && aoa > -20) {
+						aoa = -15;
+					}
+					else if (aoa < -20) {
+						aoa = 0;
+						// aoa = -17.5 + (-aoa - 17.5);
+					}
+
+					// convert back to radians
+					aoa = aoa * pi / 180;
+
+					let res = 2 * 3.14159 * aoa * .9;
+					return res; //simple symmetrical wing
 				},
 				cd: function(aoa) {
 					//aoa is in radians

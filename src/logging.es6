@@ -33,7 +33,8 @@ function logPlane(plane, spec, t) {
 		omegas.y,
 		omegas.z,
 		plane.alpha, // 19
-		plane.tailAngle);
+		plane.tailAngle, // 20
+		plane.rudderAngle);
 	// console.log(plane);
 }
 
