@@ -44,23 +44,23 @@ exports.getCommands = function(globalState, dt) {
 			applied = true;
 		}
 
-		if (time > 3 && trigger0 === false) {
-			commands.push({
-				id: plane.id,
-				input: "rudder",
-				value: 0.5
-			});
-			trigger0 = true;
-		}
+		// if (time > 3 && trigger0 === false) {
+		// 	commands.push({
+		// 		id: plane.id,
+		// 		input: "rudder",
+		// 		value: 0.5
+		// 	});
+		// 	trigger0 = true;
+		// }
 
-		if (time > 5 && trigger1 === false) {
-			commands.push({
-				id: plane.id,
-				input: "rudder",
-				value: 0
-			});
-			trigger1 = true;
-		}
+		// if (time > 5 && trigger1 === false) {
+		// 	commands.push({
+		// 		id: plane.id,
+		// 		input: "rudder",
+		// 		value: 0
+		// 	});
+		// 	trigger1 = true;
+		// }
 
 		if (plane.position.z > 50 && !pushedDown) {
 			commands.push({

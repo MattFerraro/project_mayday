@@ -144,6 +144,7 @@ var planeSpecs = {
 
 		wing: {
 			position: new Vector3(0, -.3 * 3/4, .1),
+			presetAoa: 2,  // degrees
 			chordRoot: .3,
 			chordTip: .20,
 			length: .85,  // length of a single wing
@@ -153,7 +154,7 @@ var planeSpecs = {
 				// aoa is in radians. convert to degrees
 				aoa = aoa * 180 / pi;
 
-				aoa += 2;
+				// aoa += 2;
 				if (aoa > 15 && aoa < 20) {
 					aoa = 15;
 				}

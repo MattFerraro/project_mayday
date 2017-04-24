@@ -9,6 +9,7 @@ let XAXIS = new Vector3(1, 0, 0);
 let YAXIS = new Vector3(0, 1, 0);
 let ZAXIS = new Vector3(0, 0, 1);
 let GAIN = .1;
+let PI = 3.1415926;
 
 console.log("A");
 function updateVelocity(velocity, accel, dt) {
@@ -67,10 +68,10 @@ function updatedPlaneState(plane, spec, dt, t) {
 	let tailTorqueHoriz = getTailTorque(plane, spec, tailForceHoriz);
 	let tailTorqueVert = getTailTorque(plane, spec, tailForceVert);
 
-	let alpha, vProj;
-	[alpha, vProj] = getAngleOfAttack(plane, spec);
-	plane.alpha = alpha;
-	let wingForce = getWingForce(plane, spec, alpha, vProj);
+	let alphaLeft, alphaRight, vProjLeft, vProjRight;
+	[alphaLeft, alphaRight, vProjLeft, vProjRight] = getAngleOfAttack(plane, spec);
+	plane.alpha = alphaLeft;
+	let wingForce = getWingForce(plane, spec, alphaLeft, alphaRight, vProjLeft, vProjRight);
 	// wingForce.set(0, 0, 0);
 	// console.log(wingForce);
 
@@ -94,21 +95,38 @@ function updatedPlaneState(plane, spec, dt, t) {
 	return [changeInAngularMomentum, deltaRotation, deltaPosition, deltaVelocity];
 }
 
-function getWingForce(plane, spec, alpha, vProj) {
+function getWingForce(plane, spec, alphaLeft, alphaRight, vProjLeft, vProjRight) {
 	let wing = spec.wing;
-	let cl = wing.cl(alpha);
-	let cd = wing.cd(alpha);
+
+	let clLeft = wing.cl(alphaLeft);
+	let cdLeft = wing.cd(alphaLeft);
 	let chord = (wing.chordRoot + wing.chordTip) / 2;
 
 	// let dragForceMag = .5 * cd * RHO * vProj.lengthSq() * wing.thickness * wing.length * 2;
-	let liftForceMag = .5 * cl * RHO * vProj.lengthSq() * chord * wing.length * 2;
+	let liftForceMagLeft = .5 * clLeft * RHO * vProjLeft.lengthSq() * chord * wing.length * 2;
 
-	let liftForceDir = new Vector3(1, 0, 0).applyQuaternion(plane.rotation).cross(plane.velocity).normalize();
+	let liftForceDirLeft = new Vector3(1, 0, 0).applyQuaternion(plane.rotation).cross(plane.velocity).normalize();
 	// let dragForceDir = plane.velocity.clone().negate().normalize();
 
-	let liftForce = liftForceDir.multiplyScalar(liftForceMag);
+	let liftForceLeft = liftForceDirLeft.multiplyScalar(liftForceMagLeft);
+
+
+
+	let clRight = wing.cl(alphaRight);
+	let cdRight = wing.cd(alphaRight);
+	// let chord = (wing.chordRoot + wing.chordTip) / 2;
+
+	// let dragForceMag = .5 * cd * RHO * vProj.lengthSq() * wing.thickness * wing.length * 2;
+	let liftForceMagRight = .5 * clRight * RHO * vProjRight.lengthSq() * chord * wing.length * 2;
+
+	let liftForceDirRight = new Vector3(1, 0, 0).applyQuaternion(plane.rotation).cross(plane.velocity).normalize();
+	// let dragForceDir = plane.velocity.clone().negate().normalize();
+
+	let liftForceRight = liftForceDirRight.multiplyScalar(liftForceMagRight);
+
+
 	// let dragForce = dragForceDir.multiplyScalar(dragForceMag);
-	return liftForce.clone();//.add(dragForce);
+	return liftForceLeft.clone();//.add(dragForce);
 }
 
 function updateOrientation(plane, spec, dt, angularMomentum) {
@@ -143,9 +161,21 @@ function getAngleOfAttack(plane, spec) {
 	let rightWing = new Vector3(1, 0, 0).applyQuaternion(plane.rotation);
 	let up = new Vector3(0, 0, 1).applyQuaternion(plane.rotation);
 
+	let dihedral = 5;
+	let presetAoa = spec.wing.presetAoa;
+	// let rightWingUnderside = new Vector3(0, 0, -1);
+	// rightWingUnderside.applyAxisAngle(new Vector3(0, 1, 0), -dihedral * PI / 180);
+	// rightWingUnderside.applyAxisAngle(new Vector3(1, 0, 0), presetAoa * PI / 180);
+	// rightWingUnderside.applyQuaternion(plane.rotation);
+	// let rightDiff = rightWingV.clone().sub(plane.velocity);
+
+	// let leftWingWind = new Vector3(0, 1, 0).applyQuaternion(plane.rotation);
+	// leftWingWind.applyAxisAngle(rightWing, presetAoa * PI / 180);
+	// leftWingWind.applyAxisAngle(heading, dihedral * PI / 180)
+	// leftWingV = plane.velocity.clone().projectOnVector(leftWingWind);
+
 	let velocityProj = plane.velocity.clone().projectOnPlane(rightWing);
 	let velocityProjProj = velocityProj.clone().projectOnVector(heading);
-
 	let diff = velocityProj.clone().sub(velocityProjProj);
 
 	let s = -Math.sign( diff.clone().dot(up) );
@@ -153,7 +183,7 @@ function getAngleOfAttack(plane, spec) {
 	let x = velocityProjProj.length();
 	let angle = Math.atan2(y, x);
 
-	return [angle, velocityProj];
+	return [angle, angle, velocityProj, velocityProj];
 }
 
 function getTailForce(plane, spec) {
@@ -218,7 +248,7 @@ function getVertStabForce(plane, spec, omegas, heading, rightWing, up) {
 	let x = velocityProjProj.length();
 	let angle = Math.atan2(y, x);
 
-	angle += (-plane.rudder) * vertStab.rudderRange;
+	// angle += (plane.rudder) * vertStab.rudderRange;
 	plane.rudderAngle = angle;
 
 	let cl = vertStab.cl(angle);
